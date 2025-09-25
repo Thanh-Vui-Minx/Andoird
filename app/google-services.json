@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "499857562407",
+    "project_id": "btandoird",
+    "storage_bucket": "btandoird.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:499857562407:android:35c365a13b0f746057a702",
+        "android_client_info": {
+          "package_name": "com.example.peterfood"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYRBANYeAq_aUJxMX4orpj9rJxLNzjCzs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
