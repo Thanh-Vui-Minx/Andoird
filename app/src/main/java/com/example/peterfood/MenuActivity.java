@@ -49,7 +49,7 @@ public class MenuActivity extends AppCompatActivity {
         rvMenu.setLayoutManager(new LinearLayoutManager(this));
         rvMenu.setAdapter(adapter);
 
-        loadFoodList(); // Gọi để tải dữ liệu
+        loadFoodList();
 
         btnBack.setOnClickListener(v -> {
             Log.d(TAG, "Button Quay lại clicked");
@@ -59,7 +59,7 @@ public class MenuActivity extends AppCompatActivity {
 
     private void loadFoodList() {
         Log.d(TAG, "Starting to load food list from NewFoodDB");
-        db.collection("NewFoodDB") // Sử dụng collection đúng
+        db.collection("NewFoodDB")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     Log.d(TAG, "Query success, documents found: " + queryDocumentSnapshots.size());
@@ -70,6 +70,7 @@ public class MenuActivity extends AppCompatActivity {
                             String description = doc.getString("description");
                             Number price = (Number) doc.get("price");
                             Number rating = (Number) doc.get("rating");
+                            String imageUrl = doc.getString("imageUrl");
 
                             Log.d(TAG, "Processing document: " + doc.getId() + ", name: " + name);
 
@@ -78,6 +79,7 @@ public class MenuActivity extends AppCompatActivity {
                                         name,
                                         description != null ? description : "Không có mô tả",
                                         price.intValue(),
+                                        imageUrl != null ? imageUrl : "",
                                         rating != null ? rating.intValue() : 0
                                 );
                                 foodList.add(item);
