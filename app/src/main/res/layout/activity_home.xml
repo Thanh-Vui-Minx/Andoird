@@ -13,6 +13,17 @@
         android:scaleType="centerInside"
         android:src="@drawable/logo" />
     <TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Xin chào"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="PETER FOOD"
@@ -45,6 +56,7 @@
         android:clickable="true" />
 
     <Button
+        android:id="@+id/btnLogout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Đăng xuất"
