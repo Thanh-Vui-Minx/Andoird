@@ -24,6 +24,7 @@
         <activity android:name=".HomeActivity" />
         <activity android:name=".MenuActivity" />
         <activity android:name=".CartActivity" />
+        <activity android:name=".PaymentActivity" />
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

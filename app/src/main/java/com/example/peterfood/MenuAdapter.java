@@ -14,10 +14,17 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
 
     private List<FoodItem> foodList;
     private Context context;
+    private OnItemClickListener listener; // Thêm listener cho click
 
-    public MenuAdapter(List<FoodItem> foodList, Context context) {
+    // Interface cho sự kiện click
+    public interface OnItemClickListener {
+        void onItemClick(FoodItem item);
+    }
+
+    public MenuAdapter(List<FoodItem> foodList, Context context, OnItemClickListener listener) {
         this.foodList = foodList;
         this.context = context;
+        this.listener = listener;
     }
 
     @Override
@@ -40,6 +47,13 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
                     .error(android.R.drawable.ic_menu_report_image)
                     .into(holder.ivImage);
         }
+
+        // Thêm sự kiện click
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(item);
+            }
+        });
     }
 
     @Override

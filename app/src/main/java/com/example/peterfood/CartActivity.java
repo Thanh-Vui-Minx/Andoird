@@ -1,5 +1,6 @@
 package com.example.peterfood;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -52,15 +53,15 @@ public class CartActivity extends AppCompatActivity {
             if (cartItems.isEmpty()) {
                 Toast.makeText(this, "Giỏ hàng trống!", Toast.LENGTH_SHORT).show();
             } else {
-                // Tính total cuối cùng
                 int finalTotal = calculateTotal();
-                Toast.makeText(this, "Thanh toán thành công! Tổng: " + finalTotal + " VNĐ" + (isDelivery ? " (bao gồm phí ship)" : ""), Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(CartActivity.this, PaymentActivity.class);
+                intent.putExtra("totalAmount", finalTotal);
+                startActivity(intent);
                 CartManager.getInstance().clearCart();
                 adapter.notifyDataSetChanged();
                 updateTotal();
             }
         });
-
         btnClear.setOnClickListener(v -> {
             CartManager.getInstance().clearCart();
             adapter.notifyDataSetChanged();

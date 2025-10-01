@@ -1,12 +1,18 @@
 package com.example.peterfood;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.util.Log;
+import android.content.Intent;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import java.util.ArrayList;
@@ -42,10 +48,26 @@ public class MenuActivity extends AppCompatActivity {
             finish();
             return;
         }
+        // Trong onCreate, sau btnBack.setOnClickListener
+        Button btnGoToCart = findViewById(R.id.btnGoToCart);
+        if (btnGoToCart == null) {
+            Toast.makeText(this, "Lỗi: Không tìm thấy nút Giỏ Hàng", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "btnGoToCart is null");
+            finish();
+            return;
+        }
 
+        btnGoToCart.setOnClickListener(v -> {
+            Log.d(TAG, "Button Xem Giỏ Hàng clicked");
+            Intent intent = new Intent(MenuActivity.this, CartActivity.class);
+            startActivity(intent);
+        });
         db = FirebaseFirestore.getInstance();
         foodList = new ArrayList<>();
-        adapter = new MenuAdapter(foodList, this);
+        adapter = new MenuAdapter(foodList, this, item -> {
+            // Hiển thị dialog chi tiết khi click item
+            showFoodDetailDialog(item);
+        });
         rvMenu.setLayoutManager(new LinearLayoutManager(this));
         rvMenu.setAdapter(adapter);
 
@@ -55,6 +77,46 @@ public class MenuActivity extends AppCompatActivity {
             Log.d(TAG, "Button Quay lại clicked");
             finish();
         });
+    }
+
+    private void showFoodDetailDialog(FoodItem item) {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_food_details);
+
+        // Ánh xạ các view trong dialog
+        ImageView ivImage = dialog.findViewById(R.id.ivFoodImage);
+        TextView tvName = dialog.findViewById(R.id.tvFoodName);
+        TextView tvDescription = dialog.findViewById(R.id.tvFoodDescription);
+        TextView tvPrice = dialog.findViewById(R.id.tvFoodPrice);
+        TextView tvRating = dialog.findViewById(R.id.tvFoodRating);
+        Button btnAddToCart = dialog.findViewById(R.id.btnAddToCart);
+        Button btnClose = dialog.findViewById(R.id.btnClose);
+
+        // Gán dữ liệu
+        tvName.setText(item.getName());
+        tvDescription.setText(item.getDescription());
+        tvPrice.setText("Giá: " + item.getPrice() + " VNĐ");
+        tvRating.setText("Đánh giá: " + item.getRating() + "/5");
+        if (!item.getImageUrl().isEmpty()) {
+            Glide.with(this)
+                    .load(item.getImageUrl())
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_report_image)
+                    .into(ivImage);
+        }
+
+        // Xử lý thêm vào giỏ hàng
+        btnAddToCart.setOnClickListener(v -> {
+            CartItem cartItem = new CartItem(item.getName(), 1, item.getPrice());
+            CartManager.getInstance().addToCart(cartItem);
+            Toast.makeText(this, "Đã thêm " + item.getName() + " vào giỏ hàng", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        // Đóng dialog
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     private void loadFoodList() {

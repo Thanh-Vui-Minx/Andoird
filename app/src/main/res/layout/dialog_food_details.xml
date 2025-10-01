@@ -2,54 +2,58 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#FFF8E1"
     android:orientation="vertical"
-    android:padding="14sp"
-    android:visibility="visible">
+    android:padding="16dp">
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="252dp"
-        android:layout_marginBottom="16dp"
-        android:scaleType="centerInside"
-        android:src="@drawable/logo" />
+        android:id="@+id/ivFoodImage"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@android:drawable/ic_menu_gallery" />
 
     <TextView
+        android:id="@+id/tvFoodName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="64dp"
-        android:text="PETER FOOD"
-        android:textAlignment="center"
-        android:textColor="#FF5722"
-        android:textSize="32sp"
-        android:textStyle="bold" />
+        android:text="Tên Món Ăn"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp" />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="Chọn size:"
-        android:textSize="16sp" />
-
-    <Spinner
-        android:id="@+id/spSize"
+        android:id="@+id/tvFoodDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp" />
+        android:text="Mô tả món ăn"
+        android:layout_marginTop="8dp" />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="Ghi chú (tùy chọn):"
-        android:textSize="16sp" />
-
-    <EditText
-        android:id="@+id/etNote"
+        android:id="@+id/tvFoodPrice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Ví dụ: Thêm phô mai, không cay"
-        android:inputType="text" />
+        android:text="Giá: 0 VNĐ"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/tvFoodRating"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Đánh giá: 0/5"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/btnAddToCart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Thêm vào Giỏ Hàng"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/btnClose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Đóng"
+        android:layout_marginTop="8dp" />
 
 </LinearLayout>
