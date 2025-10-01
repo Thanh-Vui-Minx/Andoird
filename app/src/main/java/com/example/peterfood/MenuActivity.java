@@ -1,11 +1,12 @@
 package com.example.peterfood;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,7 +17,9 @@ import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MenuActivity extends AppCompatActivity {
 
@@ -34,6 +37,8 @@ public class MenuActivity extends AppCompatActivity {
 
         rvMenu = findViewById(R.id.rvMenu);
         Button btnBack = findViewById(R.id.btnBackToMain);
+        Button btnGoToCart = findViewById(R.id.btnGoToCart);
+        Button btnAddFood = findViewById(R.id.btnAddFood); // Nút mới để thêm món ăn
 
         if (rvMenu == null) {
             Toast.makeText(this, "Lỗi: Không tìm thấy RecyclerView", Toast.LENGTH_LONG).show();
@@ -48,8 +53,7 @@ public class MenuActivity extends AppCompatActivity {
             finish();
             return;
         }
-        // Trong onCreate, sau btnBack.setOnClickListener
-        Button btnGoToCart = findViewById(R.id.btnGoToCart);
+
         if (btnGoToCart == null) {
             Toast.makeText(this, "Lỗi: Không tìm thấy nút Giỏ Hàng", Toast.LENGTH_LONG).show();
             Log.e(TAG, "btnGoToCart is null");
@@ -57,11 +61,13 @@ public class MenuActivity extends AppCompatActivity {
             return;
         }
 
-        btnGoToCart.setOnClickListener(v -> {
-            Log.d(TAG, "Button Xem Giỏ Hàng clicked");
-            Intent intent = new Intent(MenuActivity.this, CartActivity.class);
-            startActivity(intent);
-        });
+        if (btnAddFood == null) {
+            Toast.makeText(this, "Lỗi: Không tìm thấy nút Thêm Món Ăn", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "btnAddFood is null");
+            finish();
+            return;
+        }
+
         db = FirebaseFirestore.getInstance();
         foodList = new ArrayList<>();
         adapter = new MenuAdapter(foodList, this, item -> {
@@ -73,9 +79,23 @@ public class MenuActivity extends AppCompatActivity {
 
         loadFoodList();
 
+        // Xử lý nút Back
         btnBack.setOnClickListener(v -> {
             Log.d(TAG, "Button Quay lại clicked");
             finish();
+        });
+
+        // Xử lý nút chuyển sang CartActivity
+        btnGoToCart.setOnClickListener(v -> {
+            Log.d(TAG, "Button Xem Giỏ Hàng clicked");
+            Intent intent = new Intent(MenuActivity.this, CartActivity.class);
+            startActivity(intent);
+        });
+
+        // Xử lý nút Thêm Món Ăn
+        btnAddFood.setOnClickListener(v -> {
+            Log.d(TAG, "Button Thêm Món Ăn clicked");
+            showAddFoodDialog();
         });
     }
 
@@ -115,6 +135,76 @@ public class MenuActivity extends AppCompatActivity {
 
         // Đóng dialog
         btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private void showAddFoodDialog() {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_add_food);
+
+        // Ánh xạ các view trong dialog
+        EditText etFoodName = dialog.findViewById(R.id.etFoodName);
+        EditText etFoodDescription = dialog.findViewById(R.id.etFoodDescription);
+        EditText etFoodPrice = dialog.findViewById(R.id.etFoodPrice);
+        EditText etFoodImageUrl = dialog.findViewById(R.id.etFoodImageUrl);
+        EditText etFoodRating = dialog.findViewById(R.id.etFoodRating);
+        Button btnSaveFood = dialog.findViewById(R.id.btnSaveFood);
+        Button btnCancel = dialog.findViewById(R.id.btnCancel);
+
+        // Xử lý nút Lưu
+        btnSaveFood.setOnClickListener(v -> {
+            String name = etFoodName.getText().toString().trim();
+            String description = etFoodDescription.getText().toString().trim();
+            String priceStr = etFoodPrice.getText().toString().trim();
+            String imageUrl = etFoodImageUrl.getText().toString().trim();
+            String ratingStr = etFoodRating.getText().toString().trim();
+
+            // Kiểm tra dữ liệu
+            if (name.isEmpty() || priceStr.isEmpty() || ratingStr.isEmpty()) {
+                Toast.makeText(this, "Vui lòng điền đầy đủ Tên, Giá và Đánh giá", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int price, rating;
+            try {
+                price = Integer.parseInt(priceStr);
+                rating = Integer.parseInt(ratingStr);
+                if (rating < 0 || rating > 5) {
+                    Toast.makeText(this, "Đánh giá phải từ 0 đến 5", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Giá và Đánh giá phải là số hợp lệ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Tạo object dữ liệu
+            Map<String, Object> foodData = new HashMap<>();
+            foodData.put("name", name);
+            foodData.put("description", description.isEmpty() ? "Không có mô tả" : description);
+            foodData.put("price", price);
+            foodData.put("imageUrl", imageUrl.isEmpty() ? "" : imageUrl);
+            foodData.put("rating", rating);
+
+            // Lưu lên Firestore
+            db.collection("NewFoodDB")
+                    .add(foodData)
+                    .addOnSuccessListener(documentReference -> {
+                        Log.d(TAG, "Thêm món ăn thành công: " + documentReference.getId());
+                        Toast.makeText(this, "Đã thêm món ăn: " + name, Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                        // Tải lại danh sách món ăn
+                        loadFoodList();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Lỗi khi thêm món ăn: " + e.getMessage(), e);
+                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        });
+
+        // Xử lý nút Hủy
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
     }
