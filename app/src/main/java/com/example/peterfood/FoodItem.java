@@ -1,13 +1,15 @@
 package com.example.peterfood;
 
 public class FoodItem {
+    private String documentId;
     private String name;
     private String description;
     private int price;
     private String imageUrl;
     private int rating;
 
-    public FoodItem(String name, String description, int price, String imageUrl, int rating) {
+    public FoodItem(String documentId, String name, String description, int price, String imageUrl, int rating) {
+        this.documentId = documentId;
         this.name = name;
         this.description = description;
         this.price = price;
@@ -15,6 +17,7 @@ public class FoodItem {
         this.rating = rating;
     }
 
+    public String getDocumentId() { return documentId; }
     public String getName() { return name; }
     public String getDescription() { return description; }
     public int getPrice() { return price; }

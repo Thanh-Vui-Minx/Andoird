@@ -1,5 +1,6 @@
 package com.example.peterfood;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -38,7 +39,7 @@ public class MenuActivity extends AppCompatActivity {
         rvMenu = findViewById(R.id.rvMenu);
         Button btnBack = findViewById(R.id.btnBackToMain);
         Button btnGoToCart = findViewById(R.id.btnGoToCart);
-        Button btnAddFood = findViewById(R.id.btnAddFood); // Nút mới để thêm món ăn
+        Button btnAddFood = findViewById(R.id.btnAddFood);
 
         if (rvMenu == null) {
             Toast.makeText(this, "Lỗi: Không tìm thấy RecyclerView", Toast.LENGTH_LONG).show();
@@ -70,10 +71,7 @@ public class MenuActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         foodList = new ArrayList<>();
-        adapter = new MenuAdapter(foodList, this, item -> {
-            // Hiển thị dialog chi tiết khi click item
-            showFoodDetailDialog(item);
-        });
+        adapter = new MenuAdapter(foodList, this, item -> showFoodDetailDialog(item));
         rvMenu.setLayoutManager(new LinearLayoutManager(this));
         rvMenu.setAdapter(adapter);
 
@@ -110,6 +108,7 @@ public class MenuActivity extends AppCompatActivity {
         TextView tvPrice = dialog.findViewById(R.id.tvFoodPrice);
         TextView tvRating = dialog.findViewById(R.id.tvFoodRating);
         Button btnAddToCart = dialog.findViewById(R.id.btnAddToCart);
+        Button btnDeleteFood = dialog.findViewById(R.id.btnDeleteFood);
         Button btnClose = dialog.findViewById(R.id.btnClose);
 
         // Gán dữ liệu
@@ -131,6 +130,29 @@ public class MenuActivity extends AppCompatActivity {
             CartManager.getInstance().addToCart(cartItem);
             Toast.makeText(this, "Đã thêm " + item.getName() + " vào giỏ hàng", Toast.LENGTH_SHORT).show();
             dialog.dismiss();
+        });
+
+        // Xử lý xóa món ăn
+        btnDeleteFood.setOnClickListener(v -> {
+            new AlertDialog.Builder(MenuActivity.this)
+                    .setTitle("Xác nhận xóa")
+                    .setMessage("Bạn có chắc muốn xóa món " + item.getName() + "?")
+                    .setPositiveButton("Xóa", (dialogInner, which) -> {
+                        db.collection("NewFoodDB").document(item.getDocumentId())
+                                .delete()
+                                .addOnSuccessListener(aVoid -> {
+                                    Log.d(TAG, "Xóa món ăn thành công: " + item.getName());
+                                    Toast.makeText(this, "Đã xóa món ăn: " + item.getName(), Toast.LENGTH_SHORT).show();
+                                    dialog.dismiss();
+                                    loadFoodList();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Lỗi khi xóa món ăn: " + e.getMessage(), e);
+                                    Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                    })
+                    .setNegativeButton("Hủy", null)
+                    .show();
         });
 
         // Đóng dialog
@@ -194,7 +216,6 @@ public class MenuActivity extends AppCompatActivity {
                         Log.d(TAG, "Thêm món ăn thành công: " + documentReference.getId());
                         Toast.makeText(this, "Đã thêm món ăn: " + name, Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
-                        // Tải lại danh sách món ăn
                         loadFoodList();
                     })
                     .addOnFailureListener(e -> {
@@ -228,6 +249,7 @@ public class MenuActivity extends AppCompatActivity {
 
                             if (name != null && price != null) {
                                 FoodItem item = new FoodItem(
+                                        doc.getId(),
                                         name,
                                         description != null ? description : "Không có mô tả",
                                         price.intValue(),

@@ -14,9 +14,8 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
 
     private List<FoodItem> foodList;
     private Context context;
-    private OnItemClickListener listener; // Thêm listener cho click
+    private OnItemClickListener listener;
 
-    // Interface cho sự kiện click
     public interface OnItemClickListener {
         void onItemClick(FoodItem item);
     }
