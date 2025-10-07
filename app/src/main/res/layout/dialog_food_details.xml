@@ -36,6 +36,13 @@
         android:layout_marginTop="8dp" />
 
     <TextView
+        android:id="@+id/tvFoodSalePrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Giảm giá : "
+        android:layout_marginTop="8dp" />
+
+    <TextView
         android:id="@+id/tvFoodRating"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -48,6 +55,13 @@
         android:layout_height="wrap_content"
         android:text="Thêm vào Giỏ Hàng"
         android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/btnEditFood"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sửa món ăn"
+        android:layout_marginTop="8dp" />
 
     <Button
         android:id="@+id/btnDeleteFood"

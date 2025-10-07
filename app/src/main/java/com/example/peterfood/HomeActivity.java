@@ -1,7 +1,6 @@
 package com.example.peterfood;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -9,97 +8,104 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends BaseActivity {
 
     private static final String TAG = "HomeActivity";
-    private SharedPreferences sharedPreferences;
+    private TextView tvWelcome;
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        loadLogo(); // Tải logo từ BaseActivity
 
-        // Khởi tạo SharedPreferences
-        sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        tvWelcome = findViewById(R.id.tvWelcome);
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
-        // Ánh xạ các view
-        TextView tvWelcome = findViewById(R.id.tvWelcome);
-        Button btnMenu = findViewById(R.id.btnMenu);
+        // Khởi tạo nút Xem giỏ hàng
         Button btnCart = findViewById(R.id.btnCart);
-        Button btnLogout = findViewById(R.id.btnLogout);
-
-        // Kiểm tra các view
-        if (tvWelcome == null) {
-            Log.e(TAG, "TextView tvWelcome is null");
-            Toast.makeText(this, "Lỗi: Không tìm thấy TextView chào mừng", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-
-        if (btnMenu == null) {
-            Log.e(TAG, "Button btnMenu is null");
-            Toast.makeText(this, "Lỗi: Không tìm thấy nút Xem Menu", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-
         if (btnCart == null) {
             Log.e(TAG, "Button btnCart is null");
-            Toast.makeText(this, "Lỗi: Không tìm thấy nút Giỏ Hàng", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-
-        if (btnLogout == null) {
-            Log.e(TAG, "Button btnLogout is null");
-            Toast.makeText(this, "Lỗi: Không tìm thấy nút Đăng Xuất", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-
-        // Hiển thị câu chào với username
-        String username = sharedPreferences.getString("username", "");
-        if (!username.isEmpty()) {
-            tvWelcome.setText("Xin chào, " + username);
-            Log.d(TAG, "User logged in: " + username);
+            Toast.makeText(this, "Lỗi: Không tìm thấy nút Xem giỏ hàng", Toast.LENGTH_SHORT).show();
         } else {
-            tvWelcome.setText("Xin chào, Khách");
-            Log.w(TAG, "No username found in SharedPreferences");
-            // Chuyển về MainActivity nếu không có username
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
-            finish();
-            return;
+            btnCart.setOnClickListener(v -> {
+                Log.d(TAG, "Button Xem giỏ hàng clicked");
+                Intent intent = new Intent(HomeActivity.this, CartActivity.class);
+                startActivity(intent);
+            });
         }
 
-        // Xử lý nút Xem Menu
-        btnMenu.setOnClickListener(v -> {
-            Log.d(TAG, "Button Xem Menu clicked");
-            Toast.makeText(this, "Đang chuyển sang Menu", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(HomeActivity.this, MenuActivity.class);
-            startActivity(intent);
-        });
+        // Lấy username từ SharedPreferences
+        String username = getSharedPreferences("UserPrefs", MODE_PRIVATE)
+                .getString("username", null);
 
-        // Xử lý nút Giỏ Hàng
-        btnCart.setOnClickListener(v -> {
-            Log.d(TAG, "Button Giỏ Hàng clicked");
-            Intent intent = new Intent(HomeActivity.this, CartActivity.class);
-            startActivity(intent);
-        });
+        if (username != null && !username.isEmpty()) {
+            tvWelcome.setText("Xin chào, " + username);
+            Log.d(TAG, "Hiển thị username từ SharedPreferences: " + username);
+        } else {
+            Log.w(TAG, "No username found in SharedPreferences, fetching from Firestore");
+            // Lấy username từ Firestore
+            FirebaseUser user = mAuth.getCurrentUser();
+            if (user != null) {
+                db.collection("users").document(user.getUid())
+                        .get()
+                        .addOnSuccessListener(documentSnapshot -> {
+                            String displayUsername = documentSnapshot.getString("username");
+                            if (displayUsername != null && !displayUsername.isEmpty()) {
+                                tvWelcome.setText("Xin chào, " + displayUsername);
+                                // Lưu lại vào SharedPreferences
+                                getSharedPreferences("UserPrefs", MODE_PRIVATE)
+                                        .edit()
+                                        .putString("username", displayUsername)
+                                        .apply();
+                                Log.d(TAG, "Hiển thị username từ Firestore: " + displayUsername);
+                            } else {
+                                tvWelcome.setText("Xin chào, User");
+                                Log.w(TAG, "No username found in Firestore for user: " + user.getUid());
+                            }
+                        })
+                        .addOnFailureListener(e -> {
+                            tvWelcome.setText("Xin chào, User");
+                            Log.e(TAG, "Lỗi lấy username từ Firestore: " + e.getMessage(), e);
+                        });
+            } else {
+                tvWelcome.setText("Xin chào, User");
+                Log.e(TAG, "No user logged in");
+            }
+        }
 
-        // Xử lý nút Đăng Xuất
-        btnLogout.setOnClickListener(v -> {
-            Log.d(TAG, "Button Đăng Xuất clicked");
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("isLoggedIn", false);
-            editor.remove("username");
-            editor.remove("password");
-            editor.apply();
-            Toast.makeText(this, "Bạn đã đăng xuất thành công", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(HomeActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        });
+        // Xử lý nút chuyển sang MenuActivity
+        Button btnMenu = findViewById(R.id.btnMenu);
+        if (btnMenu == null) {
+            Log.e(TAG, "Button btnMenu is null");
+            Toast.makeText(this, "Lỗi: Không tìm thấy nút Menu", Toast.LENGTH_SHORT).show();
+        } else {
+            btnMenu.setOnClickListener(v -> {
+                Log.d(TAG, "Button Menu clicked");
+                Intent intent = new Intent(HomeActivity.this, MenuActivity.class);
+                startActivity(intent);
+            });
+        }
+    }
+
+    // Xử lý nút đăng xuất
+    public void onLogoutClick(View view) {
+        Log.d(TAG, "Button Đăng xuất clicked");
+        mAuth.signOut();
+        getSharedPreferences("UserPrefs", MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply();
+        Intent intent = new Intent(HomeActivity.this, MainActivity.class);
+        startActivity(intent);
+        finish();
+        Toast.makeText(this, "Đã đăng xuất", Toast.LENGTH_SHORT).show();
     }
 }

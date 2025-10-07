@@ -28,7 +28,8 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_menu, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_food, parent, false);
         return new ViewHolder(view);
     }
 
@@ -37,8 +38,13 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
         FoodItem item = foodList.get(position);
         holder.tvName.setText(item.getName());
         holder.tvDescription.setText(item.getDescription());
-        holder.tvPrice.setText(String.valueOf(item.getPrice()) + " VNĐ");
+        if (item.getSalePrice() != null && item.getSalePrice() < item.getPrice()) {
+            holder.tvPrice.setText("Giá: " + item.getSalePrice() + " VNĐ (Gốc: " + item.getPrice() + " VNĐ)");
+        } else {
+            holder.tvPrice.setText("Giá: " + item.getPrice() + " VNĐ");
+        }
         holder.tvRating.setText("Đánh giá: " + item.getRating() + "/5");
+
         if (!item.getImageUrl().isEmpty()) {
             Glide.with(context)
                     .load(item.getImageUrl())
@@ -47,12 +53,7 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
                     .into(holder.ivImage);
         }
 
-        // Thêm sự kiện click
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onItemClick(item);
-            }
-        });
+        holder.itemView.setOnClickListener(v -> listener.onItemClick(item));
     }
 
     @Override
@@ -61,16 +62,16 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvName, tvDescription, tvPrice, tvRating;
-        public ImageView ivImage;
+        ImageView ivImage;
+        TextView tvName, tvDescription, tvPrice, tvRating;
 
         public ViewHolder(View itemView) {
             super(itemView);
-            tvName = itemView.findViewById(R.id.tvName);
-            tvDescription = itemView.findViewById(R.id.tvDescription);
-            tvPrice = itemView.findViewById(R.id.tvPrice);
-            tvRating = itemView.findViewById(R.id.tvRating);
-            ivImage = itemView.findViewById(R.id.ivImage);
+            ivImage = itemView.findViewById(R.id.ivFoodImage);
+            tvName = itemView.findViewById(R.id.tvFoodName);
+            tvDescription = itemView.findViewById(R.id.tvFoodDescription);
+            tvPrice = itemView.findViewById(R.id.tvFoodPrice);
+            tvRating = itemView.findViewById(R.id.tvFoodRating);
         }
     }
 }

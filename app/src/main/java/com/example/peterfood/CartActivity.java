@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.List;
 
-public class CartActivity extends AppCompatActivity {
+public class CartActivity extends BaseActivity {
 
     private ListView lvCart;
     private TextView tvTotal;
@@ -28,8 +28,8 @@ public class CartActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
-
-        lvCart = findViewById(R.id.lvCart);
+        loadLogo();
+        lvCart = findViewById(R.id.rvCart);
         tvTotal = findViewById(R.id.tvTotal);
         Button btnCheckout = findViewById(R.id.btnCheckout);
         Button btnClear = findViewById(R.id.btnClear);

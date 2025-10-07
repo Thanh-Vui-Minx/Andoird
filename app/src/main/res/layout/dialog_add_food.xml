@@ -52,6 +52,13 @@
         android:hint="Đánh giá (0-5)"
         android:inputType="number"
         android:layout_marginTop="8dp" />
+    <EditText
+        android:id="@+id/etFoodSalePrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Giá sale (0 nếu không sale)"
+        android:inputType="number"
+        android:layout_marginTop="8dp" />
 
     <Button
         android:id="@+id/btnSaveFood"
