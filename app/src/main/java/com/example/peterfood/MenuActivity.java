@@ -4,8 +4,12 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -15,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import java.util.ArrayList;
@@ -28,8 +33,11 @@ public class MenuActivity extends BaseActivity {
     private RecyclerView rvMenu;
     private MenuAdapter adapter;
     private List<FoodItem> foodList;
+    private List<FoodItem> filteredFoodList;
     private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
     private String role;
+    private EditText etSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,11 +49,12 @@ public class MenuActivity extends BaseActivity {
         loadLogo();
 
         rvMenu = findViewById(R.id.rvMenu);
-        Button btnBack = findViewById(R.id.btnBackToMain);
+        Button btnLogout = findViewById(R.id.btnLogout);
         Button btnGoToCart = findViewById(R.id.btnGoToCart);
         Button btnAddFood = findViewById(R.id.btnAddFood);
+        etSearch = findViewById(R.id.etSearch);
 
-        if (rvMenu == null || btnBack == null || btnGoToCart == null || btnAddFood == null) {
+        if (rvMenu == null || btnLogout == null || btnGoToCart == null || btnAddFood == null || etSearch == null) {
             Toast.makeText(this, "Lỗi: Không tìm thấy view", Toast.LENGTH_LONG).show();
             Log.e(TAG, "Một hoặc nhiều view bị null");
             finish();
@@ -53,8 +62,10 @@ public class MenuActivity extends BaseActivity {
         }
 
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         foodList = new ArrayList<>();
-        adapter = new MenuAdapter(foodList, this, item -> showFoodDetailDialog(item));
+        filteredFoodList = new ArrayList<>();
+        adapter = new MenuAdapter(filteredFoodList, this, item -> showFoodDetailDialog(item));
         rvMenu.setLayoutManager(new LinearLayoutManager(this));
         rvMenu.setAdapter(adapter);
 
@@ -68,17 +79,66 @@ public class MenuActivity extends BaseActivity {
             btnAddFood.setVisibility(View.VISIBLE);
         }
 
+        // Thêm TextWatcher cho ô tìm kiếm
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                filterFoodList(s.toString());
+            }
+        });
+
         loadFoodList();
 
-        btnBack.setOnClickListener(v -> finish());
+        btnLogout.setOnClickListener(v -> {
+            Log.d(TAG, "Button Đăng xuất clicked");
+            // Đăng xuất khỏi Firebase
+            mAuth.signOut();
+            // Xóa SharedPreferences
+            getSharedPreferences("UserPrefs", MODE_PRIVATE)
+                    .edit()
+                    .clear()
+                    .apply();
+            // Chuyển về MainActivity
+            Intent intent = new Intent(MenuActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+            Toast.makeText(this, "Đã đăng xuất", Toast.LENGTH_SHORT).show();
+        });
+
         btnGoToCart.setOnClickListener(v -> startActivity(new Intent(MenuActivity.this, CartActivity.class)));
         btnAddFood.setOnClickListener(v -> showAddFoodDialog());
+    }
+
+    private void filterFoodList(String query) {
+        filteredFoodList.clear();
+        if (query.isEmpty()) {
+            filteredFoodList.addAll(foodList);
+        } else {
+            for (FoodItem item : foodList) {
+                if (item.getName().toLowerCase().contains(query.toLowerCase())) {
+                    filteredFoodList.add(item);
+                }
+            }
+        }
+        adapter.notifyDataSetChanged();
+        if (filteredFoodList.isEmpty() && !query.isEmpty()) {
+            Toast.makeText(this, "Không tìm thấy món ăn nào", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showFoodDetailDialog(FoodItem item) {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_food_details);
-
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
         ImageView ivImage = dialog.findViewById(R.id.ivFoodImage);
         TextView tvName = dialog.findViewById(R.id.tvFoodName);
         TextView tvDescription = dialog.findViewById(R.id.tvFoodDescription);
@@ -154,7 +214,10 @@ public class MenuActivity extends BaseActivity {
     private void showAddFoodDialog() {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_add_food);
-
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
         EditText etFoodName = dialog.findViewById(R.id.etFoodName);
         EditText etFoodDescription = dialog.findViewById(R.id.etFoodDescription);
         EditText etFoodPrice = dialog.findViewById(R.id.etFoodPrice);
@@ -317,6 +380,7 @@ public class MenuActivity extends BaseActivity {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     foodList.clear();
+                    filteredFoodList.clear();
                     for (DocumentSnapshot doc : queryDocumentSnapshots) {
                         try {
                             String name = doc.getString("name");
@@ -337,13 +401,14 @@ public class MenuActivity extends BaseActivity {
                                         salePrice != null ? salePrice.intValue() : null
                                 );
                                 foodList.add(item);
+                                filteredFoodList.add(item);
                             }
                         } catch (Exception e) {
                             Log.e(TAG, "Error parsing document: " + e.getMessage(), e);
                         }
                     }
                     adapter.notifyDataSetChanged();
-                    if (foodList.isEmpty()) {
+                    if (filteredFoodList.isEmpty()) {
                         Toast.makeText(this, "Không có món ăn nào để hiển thị", Toast.LENGTH_SHORT).show();
                     }
                 })

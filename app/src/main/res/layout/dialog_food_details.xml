@@ -3,77 +3,84 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp"
+    android:background="#FFFFFF">
 
     <ImageView
         android:id="@+id/ivFoodImage"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="250dp"
         android:scaleType="centerCrop"
-        android:src="@android:drawable/ic_menu_gallery" />
+        android:src="@android:drawable/ic_menu_gallery"
+        android:contentDescription="Ảnh món ăn" />
 
     <TextView
         android:id="@+id/tvFoodName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
         android:text="Tên Món Ăn"
         android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginTop="8dp" />
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tvFoodDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Mô tả món ăn"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="12dp"
+        android:text="Mô tả món ăn" />
 
     <TextView
         android:id="@+id/tvFoodPrice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Giá: 0 VNĐ"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="12dp"
+        android:text="Giá: 0 VNĐ" />
 
     <TextView
         android:id="@+id/tvFoodSalePrice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Giảm giá : "
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="12dp"
+        android:text="Giảm giá: " />
 
     <TextView
         android:id="@+id/tvFoodRating"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Đánh giá: 0/5"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="12dp"
+        android:text="Đánh giá: 0/5" />
 
     <Button
         android:id="@+id/btnAddToCart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="Thêm vào Giỏ Hàng"
-        android:layout_marginTop="16dp" />
+        android:padding="12dp" />
 
     <Button
         android:id="@+id/btnEditFood"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="Sửa món ăn"
-        android:layout_marginTop="8dp" />
+        android:padding="12dp" />
 
     <Button
         android:id="@+id/btnDeleteFood"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Xóa Món Ăn"/>
+        android:layout_marginTop="8dp"
+        android:text="Xóa Món Ăn"
+        android:padding="12dp" />
 
     <Button
         android:id="@+id/btnClose"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="Đóng"
-        android:layout_marginTop="8dp" />
+        android:padding="12dp" />
 
 </LinearLayout>
