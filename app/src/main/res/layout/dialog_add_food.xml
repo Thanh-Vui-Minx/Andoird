@@ -3,47 +3,68 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Thêm Món Ăn Mới"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="16dp" />
+    android:padding="24dp"
+    android:background="#FFFFFF">
 
     <EditText
         android:id="@+id/etFoodName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Tên món ăn"
-        android:inputType="text" />
+        android:layout_marginBottom="8dp" />
 
     <EditText
         android:id="@+id/etFoodDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Mô tả"
-        android:inputType="textMultiLine"
-        android:layout_marginTop="8dp" />
+        android:hint="Mô tả ngắn"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/etDetailedDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Mô tả chi tiết"
+        android:layout_marginBottom="8dp" />
 
     <EditText
         android:id="@+id/etFoodPrice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Giá (VNĐ)"
+        android:hint="Giá Small (VNĐ)"
         android:inputType="number"
-        android:layout_marginTop="8dp" />
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/etMediumPrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Giá Medium (VNĐ)"
+        android:inputType="number"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/etLargePrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Giá Large (VNĐ)"
+        android:inputType="number"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/etFoodSalePrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Giá giảm (VNĐ)"
+        android:inputType="number"
+        android:layout_marginBottom="8dp" />
 
     <EditText
         android:id="@+id/etFoodImageUrl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="URL hình ảnh"
-        android:inputType="textUri"
-        android:layout_marginTop="8dp" />
+        android:hint="URL ảnh"
+        android:layout_marginBottom="8dp" />
 
     <EditText
         android:id="@+id/etFoodRating"
@@ -51,14 +72,7 @@
         android:layout_height="wrap_content"
         android:hint="Đánh giá (0-5)"
         android:inputType="number"
-        android:layout_marginTop="8dp" />
-    <EditText
-        android:id="@+id/etFoodSalePrice"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Giá sale (0 nếu không sale)"
-        android:inputType="number"
-        android:layout_marginTop="8dp" />
+        android:layout_marginBottom="8dp" />
 
     <Button
         android:id="@+id/btnSaveFood"

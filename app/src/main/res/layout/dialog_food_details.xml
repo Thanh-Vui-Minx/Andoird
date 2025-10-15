@@ -22,14 +22,13 @@
         android:text="Tên Món Ăn"
         android:textSize="24sp"
         android:textStyle="bold" />
-
     <TextView
-        android:id="@+id/tvFoodDescription"
+        android:id="@+id/tvDetailedDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="Mô tả món ăn" />
-
+        android:text="Mô tả chi tiết món ăn..."
+        android:textSize="16sp" />
     <TextView
         android:id="@+id/tvFoodPrice"
         android:layout_width="match_parent"
@@ -37,6 +36,44 @@
         android:layout_marginTop="12dp"
         android:text="Giá: 0 VNĐ" />
 
+    <Spinner
+        android:id="@+id/spSize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:entries="@array/food_sizes" />
+
+    <TextView
+        android:id="@+id/tvSelectedPrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Giá đã chọn: 0 VNĐ" />
+
+    <EditText
+        android:id="@+id/etReview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Viết đánh giá của bạn..."
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnSubmitReview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Gửi đánh giá"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tvComments"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Bình luận:"
+        android:textSize="18sp"
+        android:textStyle="bold" />
     <TextView
         android:id="@+id/tvFoodSalePrice"
         android:layout_width="match_parent"
@@ -50,7 +87,12 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="Đánh giá: 0/5" />
-
+    <LinearLayout
+        android:id="@+id/llCommentSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone" />
     <Button
         android:id="@+id/btnAddToCart"
         android:layout_width="match_parent"
