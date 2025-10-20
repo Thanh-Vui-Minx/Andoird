@@ -24,6 +24,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import java.util.ArrayList;
@@ -46,7 +48,6 @@ public class MenuActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate called");
         setContentView(R.layout.activity_menu);
 
         // Tải logo tự động từ BaseActivity
@@ -60,7 +61,6 @@ public class MenuActivity extends BaseActivity {
 
         if (rvMenu == null || btnLogout == null || btnGoToCart == null || btnAddFood == null || etSearch == null) {
             Toast.makeText(this, "Lỗi: Không tìm thấy view", Toast.LENGTH_LONG).show();
-            Log.e(TAG, "Một hoặc nhiều view bị null");
             finish();
             return;
         }
@@ -74,10 +74,8 @@ public class MenuActivity extends BaseActivity {
         rvMenu.setAdapter(adapter);
 
         role = getSharedPreferences("UserPrefs", MODE_PRIVATE).getString("role", "user");
-        Log.d(TAG, "Role in MenuActivity: " + role);
         if (!"admin".equals(role)) {
             btnAddFood.setVisibility(View.GONE);
-            Toast.makeText(this, "Chỉ admin được quản lý sản phẩm", Toast.LENGTH_SHORT).show();
         } else {
             btnAddFood.setVisibility(View.VISIBLE);
         }
@@ -88,17 +86,18 @@ public class MenuActivity extends BaseActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override
-            public void afterTextChanged(Editable s) { filterFoodList(s.toString()); }
+            public void afterTextChanged(Editable s) {
+                filterFoodList(s.toString());
+            }
         });
 
         loadFoodList();
-
+        Button btnProfile = findViewById(R.id.btnProfile);
+        btnProfile.setOnClickListener(v -> startActivity(new Intent(MenuActivity.this, ProfileActivity.class)));
         btnLogout.setOnClickListener(v -> {
-            Log.d(TAG, "Button Đăng xuất clicked");
             mAuth.signOut();
             getSharedPreferences("UserPrefs", MODE_PRIVATE).edit().clear().apply();
-            Intent intent = new Intent(MenuActivity.this, MainActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(MenuActivity.this, MainActivity.class));
             finish();
             Toast.makeText(this, "Đã đăng xuất", Toast.LENGTH_SHORT).show();
         });
@@ -131,6 +130,7 @@ public class MenuActivity extends BaseActivity {
         if (window != null) {
             window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         }
+
         ImageView ivImage = dialog.findViewById(R.id.ivFoodImage);
         TextView tvName = dialog.findViewById(R.id.tvFoodName);
         TextView tvDetailedDescription = dialog.findViewById(R.id.tvDetailedDescription);
@@ -147,6 +147,11 @@ public class MenuActivity extends BaseActivity {
         Button btnDeleteFood = dialog.findViewById(R.id.btnDeleteFood);
         Button btnEditFood = dialog.findViewById(R.id.btnEditFood);
         Button btnClose = dialog.findViewById(R.id.btnClose);
+
+        if (llCommentSection == null) {
+            Toast.makeText(this, "Lỗi: Không tìm thấy phần bình luận", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         tvName.setText(item.getName());
         tvDetailedDescription.setText(item.getDetailedDescription().isEmpty() ? "Chưa có mô tả chi tiết." : item.getDetailedDescription());
@@ -176,12 +181,14 @@ public class MenuActivity extends BaseActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedSize = parent.getItemAtPosition(position).toString();
-                int price = item.getSizePrices().getOrDefault(selectedSize, item.getPrice());
-                tvSelectedPrice.setText("Giá đã chọn (" + selectedSize + "): " + price + " VNĐ");
+                Long price = item.getSizePrices().get(selectedSize);
+                int finalPrice = (price != null) ? price.intValue() : item.getPrice();
+                tvSelectedPrice.setText("Giá đã chọn (" + selectedSize + "): " + finalPrice + " VNĐ");
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                tvSelectedPrice.setText("Giá đã chọn: " + item.getPrice() + " VNĐ");
+                tvSelectedPrice.setText("Giá đã chọn (Small): " + item.getPrice() + " VNĐ");
             }
         });
         tvSelectedPrice.setText("Giá đã chọn (Small): " + item.getPrice() + " VNĐ");
@@ -196,14 +203,14 @@ public class MenuActivity extends BaseActivity {
                     Map<String, Object> comment = new HashMap<>();
                     comment.put("userId", mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : "Anonymous");
                     comment.put("comment", review);
-                    comment.put("approved", false); // Mặc định chưa duyệt
+                    comment.put("approved", false);
                     item.getComments().add(comment);
                     db.collection("NewFoodDB").document(item.getDocumentId())
                             .update("comments", item.getComments())
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(this, "Đánh giá đã gửi, chờ duyệt!", Toast.LENGTH_SHORT).show();
                                 etReview.setText("");
-                                loadFoodList(); // Cập nhật lại để hiển thị bình luận
+                                loadFoodList();
                             })
                             .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 } else {
@@ -234,7 +241,7 @@ public class MenuActivity extends BaseActivity {
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(this, "Cập nhật trạng thái bình luận!", Toast.LENGTH_SHORT).show();
                                 llCommentSection.removeAllViews();
-                                showFoodDetailDialog(item); // Tải lại dialog để cập nhật
+                                showFoodDetailDialog(item);
                             })
                             .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 });
@@ -252,9 +259,10 @@ public class MenuActivity extends BaseActivity {
 
         btnAddToCart.setOnClickListener(v -> {
             String selectedSize = spSize.getSelectedItem().toString();
-            int price = item.getSizePrices().getOrDefault(selectedSize, item.getPrice());
-            CartItem cartItem = new CartItem(item.getName() + " (" + selectedSize + ")", 1, price);
-            CartManager.getInstance().addToCart(cartItem);
+            Long price = item.getSizePrices().get(selectedSize);
+            int finalPrice = (price != null) ? price.intValue() : item.getPrice();
+            CartItem cartItem = new CartItem(item.getName() + " (" + selectedSize + ")", finalPrice, 1); // ✅ Sửa constructor: name, price, quantity
+            addItemToCart(cartItem); // ✅ Thay CartManager bằng hàm Firebase
             Toast.makeText(this, "Đã thêm " + item.getName() + " (" + selectedSize + ") vào giỏ hàng", Toast.LENGTH_SHORT).show();
             dialog.dismiss();
         });
@@ -271,10 +279,7 @@ public class MenuActivity extends BaseActivity {
                                     dialog.dismiss();
                                     loadFoodList();
                                 })
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Lỗi khi xóa món ăn: " + e.getMessage(), e);
-                                    Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
+                                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                     })
                     .setNegativeButton("Hủy", null)
                     .show();
@@ -286,23 +291,41 @@ public class MenuActivity extends BaseActivity {
         dialog.show();
     }
 
+    private void addItemToCart(CartItem newItem) {
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        DocumentReference userDoc = db.collection("users").document(mAuth.getCurrentUser().getUid());
+        Map<String, Object> itemData = new HashMap<>();
+        itemData.put("name", newItem.getName());
+        itemData.put("price", newItem.getPrice());
+        itemData.put("quantity", newItem.getQuantity());
+        itemData.put("imageUrl", newItem.getImageUrl()); // ✅ THÊM VÀO FIREBASE
+        // ✅ Add vào array "cart" trên Firebase
+        userDoc.update("cart", FieldValue.arrayUnion(itemData))
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Lỗi thêm vào giỏ: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
     private void showAddFoodDialog() {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_add_food);
 
-        Window window = dialog.getWindow();
-        if (window != null) {
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
         EditText etFoodName = dialog.findViewById(R.id.etFoodName);
         EditText etFoodDescription = dialog.findViewById(R.id.etFoodDescription);
+        EditText etDetailedDescription = dialog.findViewById(R.id.etDetailedDescription);
         EditText etFoodPrice = dialog.findViewById(R.id.etFoodPrice);
+        EditText etMediumPrice = dialog.findViewById(R.id.etMediumPrice);
+        EditText etLargePrice = dialog.findViewById(R.id.etLargePrice);
         EditText etFoodSalePrice = dialog.findViewById(R.id.etFoodSalePrice);
         EditText etFoodImageUrl = dialog.findViewById(R.id.etFoodImageUrl);
         EditText etFoodRating = dialog.findViewById(R.id.etFoodRating);
-        EditText etDetailedDescription = dialog.findViewById(R.id.etDetailedDescription); // Thêm trường mới
-        EditText etMediumPrice = dialog.findViewById(R.id.etMediumPrice); // Giá Medium
-        EditText etLargePrice = dialog.findViewById(R.id.etLargePrice); // Giá Large
         Button btnSaveFood = dialog.findViewById(R.id.btnSaveFood);
         Button btnCancel = dialog.findViewById(R.id.btnCancel);
 
@@ -315,11 +338,11 @@ public class MenuActivity extends BaseActivity {
         btnSaveFood.setOnClickListener(v -> {
             String name = etFoodName.getText().toString().trim();
             String description = etFoodDescription.getText().toString().trim();
+            String detailedDescription = etDetailedDescription.getText().toString().trim();
             String priceStr = etFoodPrice.getText().toString().trim();
             String salePriceStr = etFoodSalePrice.getText().toString().trim();
             String imageUrl = etFoodImageUrl.getText().toString().trim();
             String ratingStr = etFoodRating.getText().toString().trim();
-            String detailedDescription = etDetailedDescription.getText().toString().trim();
             String mediumPriceStr = etMediumPrice.getText().toString().trim();
             String largePriceStr = etLargePrice.getText().toString().trim();
 
@@ -329,13 +352,13 @@ public class MenuActivity extends BaseActivity {
             }
 
             int price, rating;
-            Integer salePrice = null, mediumPrice = null, largePrice = null;
+            Long salePrice = null, mediumPrice = null, largePrice = null; // Sử dụng Long
             try {
                 price = Integer.parseInt(priceStr);
                 rating = Integer.parseInt(ratingStr);
-                if (!salePriceStr.isEmpty()) salePrice = Integer.parseInt(salePriceStr);
-                if (!mediumPriceStr.isEmpty()) mediumPrice = Integer.parseInt(mediumPriceStr);
-                if (!largePriceStr.isEmpty()) largePrice = Integer.parseInt(largePriceStr);
+                if (!salePriceStr.isEmpty()) salePrice = Long.parseLong(salePriceStr);
+                if (!mediumPriceStr.isEmpty()) mediumPrice = Long.parseLong(mediumPriceStr);
+                if (!largePriceStr.isEmpty()) largePrice = Long.parseLong(largePriceStr);
                 if (salePrice != null && salePrice >= price) {
                     Toast.makeText(this, "Giá giảm phải nhỏ hơn giá gốc", Toast.LENGTH_SHORT).show();
                     return;
@@ -349,8 +372,8 @@ public class MenuActivity extends BaseActivity {
                 return;
             }
 
-            Map<String, Integer> sizePrices = new HashMap<>();
-            sizePrices.put("Small", price);
+            Map<String, Long> sizePrices = new HashMap<>();
+            sizePrices.put("Small", (long) price);
             if (mediumPrice != null) sizePrices.put("Medium", mediumPrice);
             if (largePrice != null) sizePrices.put("Large", largePrice);
 
@@ -358,7 +381,7 @@ public class MenuActivity extends BaseActivity {
             foodData.put("name", name);
             foodData.put("description", description.isEmpty() ? "Không có mô tả" : description);
             foodData.put("price", price);
-            foodData.put("salePrice", salePrice);
+            foodData.put("salePrice", salePrice != null ? salePrice.intValue() : null); // Ép sang Integer nếu cần
             foodData.put("imageUrl", imageUrl.isEmpty() ? "" : imageUrl);
             foodData.put("rating", rating);
             foodData.put("detailedDescription", detailedDescription.isEmpty() ? "Chưa có mô tả chi tiết" : detailedDescription);
@@ -388,13 +411,13 @@ public class MenuActivity extends BaseActivity {
 
         EditText etFoodName = dialog.findViewById(R.id.etFoodName);
         EditText etFoodDescription = dialog.findViewById(R.id.etFoodDescription);
+        EditText etDetailedDescription = dialog.findViewById(R.id.etDetailedDescription);
         EditText etFoodPrice = dialog.findViewById(R.id.etFoodPrice);
+        EditText etMediumPrice = dialog.findViewById(R.id.etMediumPrice);
+        EditText etLargePrice = dialog.findViewById(R.id.etLargePrice);
         EditText etFoodSalePrice = dialog.findViewById(R.id.etFoodSalePrice);
         EditText etFoodImageUrl = dialog.findViewById(R.id.etFoodImageUrl);
         EditText etFoodRating = dialog.findViewById(R.id.etFoodRating);
-        EditText etDetailedDescription = dialog.findViewById(R.id.etDetailedDescription);
-        EditText etMediumPrice = dialog.findViewById(R.id.etMediumPrice);
-        EditText etLargePrice = dialog.findViewById(R.id.etLargePrice);
         Button btnSaveFood = dialog.findViewById(R.id.btnSaveFood);
         Button btnCancel = dialog.findViewById(R.id.btnCancel);
 
@@ -405,8 +428,8 @@ public class MenuActivity extends BaseActivity {
         etFoodImageUrl.setText(item.getImageUrl());
         etFoodRating.setText(String.valueOf(item.getRating()));
         etDetailedDescription.setText(item.getDetailedDescription());
-        etMediumPrice.setText(String.valueOf(item.getSizePrices().getOrDefault("Medium", 0)));
-        etLargePrice.setText(String.valueOf(item.getSizePrices().getOrDefault("Large", 0)));
+        etMediumPrice.setText(item.getSizePrices().get("Medium") != null ? String.valueOf(item.getSizePrices().get("Medium")) : "");
+        etLargePrice.setText(item.getSizePrices().get("Large") != null ? String.valueOf(item.getSizePrices().get("Large")) : "");
 
         if (!"admin".equals(role)) {
             etFoodSalePrice.setVisibility(View.GONE);
@@ -419,11 +442,11 @@ public class MenuActivity extends BaseActivity {
         btnSaveFood.setOnClickListener(v -> {
             String name = etFoodName.getText().toString().trim();
             String description = etFoodDescription.getText().toString().trim();
+            String detailedDescription = etDetailedDescription.getText().toString().trim();
             String priceStr = etFoodPrice.getText().toString().trim();
             String salePriceStr = etFoodSalePrice.getText().toString().trim();
             String imageUrl = etFoodImageUrl.getText().toString().trim();
             String ratingStr = etFoodRating.getText().toString().trim();
-            String detailedDescription = etDetailedDescription.getText().toString().trim();
             String mediumPriceStr = etMediumPrice.getText().toString().trim();
             String largePriceStr = etLargePrice.getText().toString().trim();
 
@@ -433,13 +456,13 @@ public class MenuActivity extends BaseActivity {
             }
 
             int price, rating;
-            Integer salePrice = null, mediumPrice = null, largePrice = null;
+            Long salePrice = null, mediumPrice = null, largePrice = null;
             try {
                 price = Integer.parseInt(priceStr);
                 rating = Integer.parseInt(ratingStr);
-                if (!salePriceStr.isEmpty()) salePrice = Integer.parseInt(salePriceStr);
-                if (!mediumPriceStr.isEmpty()) mediumPrice = Integer.parseInt(mediumPriceStr);
-                if (!largePriceStr.isEmpty()) largePrice = Integer.parseInt(largePriceStr);
+                if (!salePriceStr.isEmpty()) salePrice = Long.parseLong(salePriceStr);
+                if (!mediumPriceStr.isEmpty()) mediumPrice = Long.parseLong(mediumPriceStr);
+                if (!largePriceStr.isEmpty()) largePrice = Long.parseLong(largePriceStr);
                 if (salePrice != null && salePrice >= price) {
                     Toast.makeText(this, "Giá giảm phải nhỏ hơn giá gốc", Toast.LENGTH_SHORT).show();
                     return;
@@ -453,8 +476,8 @@ public class MenuActivity extends BaseActivity {
                 return;
             }
 
-            Map<String, Integer> sizePrices = new HashMap<>();
-            sizePrices.put("Small", price);
+            Map<String, Long> sizePrices = new HashMap<>();
+            sizePrices.put("Small", (long) price);
             if (mediumPrice != null) sizePrices.put("Medium", mediumPrice);
             if (largePrice != null) sizePrices.put("Large", largePrice);
 
@@ -462,7 +485,7 @@ public class MenuActivity extends BaseActivity {
             foodData.put("name", name);
             foodData.put("description", description.isEmpty() ? "Không có mô tả" : description);
             foodData.put("price", price);
-            foodData.put("salePrice", salePrice);
+            foodData.put("salePrice", salePrice != null ? salePrice.intValue() : null);
             foodData.put("imageUrl", imageUrl.isEmpty() ? "" : imageUrl);
             foodData.put("rating", rating);
             foodData.put("detailedDescription", detailedDescription.isEmpty() ? "Chưa có mô tả chi tiết" : detailedDescription);
@@ -502,7 +525,7 @@ public class MenuActivity extends BaseActivity {
                             Number rating = (Number) doc.get("rating");
                             String detailedDescription = doc.getString("detailedDescription");
                             @SuppressWarnings("unchecked")
-                            Map<String, Integer> sizePrices = (Map<String, Integer>) doc.get("sizePrices");
+                            Map<String, Long> sizePrices = (Map<String, Long>) doc.get("sizePrices"); // Sửa thành Map<String, Long>
                             @SuppressWarnings("unchecked")
                             List<Map<String, Object>> comments = (List<Map<String, Object>>) doc.get("comments");
 

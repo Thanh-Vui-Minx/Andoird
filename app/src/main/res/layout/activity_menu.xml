@@ -60,6 +60,12 @@
         android:text="Xem Giỏ Hàng"
         android:layout_marginTop="8dp" />
     <Button
+        android:id="@+id/btnProfile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Thông Tin Cá Nhân"
+        android:layout_marginTop="8dp" />
+    <Button
         android:id="@+id/btnLogout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

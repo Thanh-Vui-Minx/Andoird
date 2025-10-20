@@ -31,7 +31,18 @@ public class CartManager {
         }
         cartItems.add(item);
     }
-
+    public void removeItem(int position) {
+        if (position >= 0 && position < cartItems.size()) {
+            cartItems.remove(position);
+        }
+    }
+    public int getTotalPrice() {
+        int total = 0;
+        for (CartItem item : cartItems) {
+            total += item.getTotalPrice(); // ✅ Sử dụng method mới
+        }
+        return total;
+    }
     public void clearCart() {
         cartItems.clear();
     }

@@ -1,55 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
     android:background="#FFFFFF">
 
     <TextView
+        android:id="@+id/tvOrderSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Giỏ Hàng"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:text="Tóm tắt đơn hàng:"
+        android:textSize="16sp"
         android:layout_marginBottom="16dp" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvCart"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp" />
-
     <TextView
-        android:id="@+id/tvDeliveryAddress"
+        android:id="@+id/tvDeliveryAddressDialog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Địa chỉ giao hàng: Đang tải..."
-        android:layout_marginTop="8dp"
+        android:text="Địa chỉ hiện tại: Chưa cập nhật"
         android:layout_marginBottom="8dp" />
 
-    <TextView
-        android:id="@+id/tvTotalPrice"
+    <EditText
+        android:id="@+id/etUpdateAddress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tổng cộng: 0 VNĐ"
-        android:textSize="18sp"
-        android:textStyle="bold"
+        android:hint="Cập nhật địa chỉ giao hàng"
+        android:inputType="textPostalAddress"
         android:layout_marginBottom="16dp" />
 
     <Button
-        android:id="@+id/btnCheckout"
+        android:id="@+id/btnConfirmOrder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Thanh Toán"
+        android:text="Xác Nhận Đặt Hàng"
         android:layout_marginBottom="8dp" />
 
     <Button
-        android:id="@+id/btnBack"
+        android:id="@+id/btnCancel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Quay Lại"
-        android:onClick="onBackPressed" />
+        android:text="Hủy" />
 
 </LinearLayout>
