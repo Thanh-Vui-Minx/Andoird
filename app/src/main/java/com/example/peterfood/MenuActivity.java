@@ -267,6 +267,10 @@ public class MenuActivity extends BaseActivity {
     private void showAddFoodDialog() {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_add_food);
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
 
         EditText etFoodName = dialog.findViewById(R.id.etFoodName);
         EditText etFoodDescription = dialog.findViewById(R.id.etFoodDescription);
@@ -276,9 +280,29 @@ public class MenuActivity extends BaseActivity {
         EditText etLargePrice = dialog.findViewById(R.id.etLargePrice);
         EditText etFoodSalePrice = dialog.findViewById(R.id.etFoodSalePrice);
         EditText etFoodImageUrl = dialog.findViewById(R.id.etFoodImageUrl);
+        ImageView ivFoodImageAdd = dialog.findViewById(R.id.ivFoodImageAdd);
         EditText etFoodRating = dialog.findViewById(R.id.etFoodRating);
         Button btnSaveFood = dialog.findViewById(R.id.btnSaveFood);
         Button btnCancel = dialog.findViewById(R.id.btnCancel);
+
+        // Preview ảnh khi nhập URL
+        etFoodImageUrl.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) {
+                String url = s.toString().trim();
+                if (!url.isEmpty()) {
+                    Glide.with(MenuActivity.this)
+                            .load(url)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .placeholder(android.R.drawable.ic_menu_gallery)
+                            .error(android.R.drawable.ic_menu_report_image)
+                            .into(ivFoodImageAdd);
+                } else {
+                    ivFoodImageAdd.setImageResource(android.R.drawable.ic_menu_gallery);
+                }
+            }
+        });
 
         btnSaveFood.setOnClickListener(v -> {
             String name = etFoodName.getText().toString().trim();
@@ -354,6 +378,10 @@ public class MenuActivity extends BaseActivity {
     private void showEditFoodDialog(FoodItem item) {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_add_food);
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
 
         EditText etFoodName = dialog.findViewById(R.id.etFoodName);
         EditText etFoodDescription = dialog.findViewById(R.id.etFoodDescription);
@@ -363,6 +391,7 @@ public class MenuActivity extends BaseActivity {
         EditText etLargePrice = dialog.findViewById(R.id.etLargePrice);
         EditText etFoodSalePrice = dialog.findViewById(R.id.etFoodSalePrice);
         EditText etFoodImageUrl = dialog.findViewById(R.id.etFoodImageUrl);
+    ImageView ivFoodImageAdd = dialog.findViewById(R.id.ivFoodImageAdd);
         EditText etFoodRating = dialog.findViewById(R.id.etFoodRating);
         Button btnSaveFood = dialog.findViewById(R.id.btnSaveFood);
         Button btnCancel = dialog.findViewById(R.id.btnCancel);
@@ -372,6 +401,34 @@ public class MenuActivity extends BaseActivity {
         etFoodPrice.setText(String.valueOf(item.getPrice()));
         etFoodSalePrice.setText(item.getSalePrice() != null ? String.valueOf(item.getSalePrice()) : "");
         etFoodImageUrl.setText(item.getImageUrl());
+        // Load preview ảnh hiện tại
+        if (item.getImageUrl() != null && !item.getImageUrl().isEmpty()) {
+            Glide.with(this)
+                    .load(item.getImageUrl())
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_report_image)
+                    .into(ivFoodImageAdd);
+        }
+
+        // Cập nhật preview khi sửa URL
+        etFoodImageUrl.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) {
+                String url = s.toString().trim();
+                if (!url.isEmpty()) {
+                    Glide.with(MenuActivity.this)
+                            .load(url)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .placeholder(android.R.drawable.ic_menu_gallery)
+                            .error(android.R.drawable.ic_menu_report_image)
+                            .into(ivFoodImageAdd);
+                } else {
+                    ivFoodImageAdd.setImageResource(android.R.drawable.ic_menu_gallery);
+                }
+            }
+        });
         etFoodRating.setText(String.valueOf(item.getRating()));
         etDetailedDescription.setText(item.getDetailedDescription());
         etMediumPrice.setText(item.getSizePrices().get("Medium") != null ? String.valueOf(item.getSizePrices().get("Medium")) : "");

@@ -6,11 +6,21 @@
     android:padding="24dp"
     android:background="#FFF8E1">
 
+    <!-- Ảnh xem trước (sử dụng URL từ etFoodImageUrl) -->
+    <ImageView
+        android:id="@+id/ivFoodImageAdd"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:contentDescription="Ảnh món ăn"
+        android:scaleType="centerCrop"
+        android:src="@android:drawable/ic_menu_gallery" />
+
     <EditText
         android:id="@+id/etFoodName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Tên món ăn"
+        android:layout_marginTop="12dp"
         android:layout_marginBottom="8dp" />
 
     <EditText
