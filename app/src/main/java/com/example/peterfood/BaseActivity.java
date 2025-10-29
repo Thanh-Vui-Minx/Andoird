@@ -19,8 +19,11 @@ public abstract class BaseActivity extends AppCompatActivity {
     private static final String LOGO_URL = "https://drive.google.com/uc?export=download&id=1A0wNVSle3_c-iKoYuyCgrxLxG0Wox5AJ"; // Link logo Google Drive
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+    protected void setupCommonViews() {
+        // Gọi trong onCreate của con
     }
 
     protected void loadLogo() {

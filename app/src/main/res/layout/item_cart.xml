@@ -5,12 +5,13 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardElevation="4dp"
+    android:background="#FFF8E1">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="20dp">
 
         <ImageView
             android:id="@+id/ivImage"
@@ -24,20 +25,33 @@
             android:id="@+id/tvName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:text="Tên sản phẩm"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:layout_marginStart="16dp"
-            app:layout_constraintStart_toEndOf="@id/ivImage"
-            app:layout_constraintTop_toTopOf="@id/ivImage"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/ivImage"
+            app:layout_constraintTop_toTopOf="@+id/ivImage" />
+        <!-- Thêm dưới tvName -->
+        <TextView
+            android:id="@+id/tvNote"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Ghi chú: Không cay"
+            android:textColor="#920303"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tvName"
+            app:layout_constraintTop_toBottomOf="@id/tvName" />
 
         <TextView
             android:id="@+id/tvPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="32dp"
             android:text="0 VNĐ"
-            android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="@id/tvName"
             app:layout_constraintTop_toBottomOf="@id/tvName" />
 
@@ -45,42 +59,41 @@
             android:id="@+id/btnMinus"
             android:layout_width="32dp"
             android:layout_height="32dp"
+            android:layout_marginTop="8dp"
             android:text="-"
             android:textSize="16sp"
             app:layout_constraintStart_toStartOf="@id/tvPrice"
-            app:layout_constraintTop_toBottomOf="@id/tvPrice"
-            android:layout_marginTop="8dp" />
+            app:layout_constraintTop_toBottomOf="@id/tvPrice" />
 
         <TextView
             android:id="@+id/tvQuantity"
             android:layout_width="40dp"
             android:layout_height="32dp"
-            android:text="1"
+            android:layout_marginStart="8dp"
             android:gravity="center"
+            android:text="1"
             android:textSize="16sp"
             app:layout_constraintStart_toEndOf="@id/btnMinus"
-            app:layout_constraintTop_toTopOf="@id/btnMinus"
-            android:layout_marginStart="8dp" />
+            app:layout_constraintTop_toTopOf="@id/btnMinus" />
 
         <Button
             android:id="@+id/btnPlus"
             android:layout_width="32dp"
             android:layout_height="32dp"
+            android:layout_marginStart="8dp"
             android:text="+"
             android:textSize="16sp"
             app:layout_constraintStart_toEndOf="@id/tvQuantity"
-            app:layout_constraintTop_toTopOf="@id/tvQuantity"
-            android:layout_marginStart="8dp" />
+            app:layout_constraintTop_toTopOf="@id/tvQuantity" />
 
         <Button
             android:id="@+id/btnRemove"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="80dp"
+            android:layout_height="59dp"
+            android:layout_marginBottom="8dp"
             android:text="Xóa"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="8dp" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </androidx.cardview.widget.CardView>

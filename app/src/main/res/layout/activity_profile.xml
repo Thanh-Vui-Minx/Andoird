@@ -4,69 +4,153 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#FFFFFF">
+    android:background="#FFF8E1">
 
-    <TextView
+    <!-- Tiêu đề + Nút quay lại -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Thông Tin Người Dùng"
-        android:textSize="24sp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Thông Tin Người Dùng"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- Email (không sửa) -->
+    <TextView
+        android:id="@+id/tvEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Email:"
         android:textStyle="bold"
+        android:layout_marginTop="8dp" />
+
+    <!-- Tên đăng nhập -->
+    <TextView
+        android:id="@+id/tvUsernameLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tên đăng nhập:"
+        android:textStyle="bold" />
+    <TextView
+        android:id="@+id/tvUsername"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="username"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Họ tên -->
+    <TextView
+        android:id="@+id/tvFullnameLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Họ và tên:"
+        android:textStyle="bold" />
+    <TextView
+        android:id="@+id/tvFullname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nguyễn Văn A"
+        android:layout_marginBottom="8dp" />
+
+    <!-- SĐT -->
+    <TextView
+        android:id="@+id/tvPhoneLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Số điện thoại:"
+        android:textStyle="bold" />
+    <TextView
+        android:id="@+id/tvPhone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0123456789"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Địa chỉ (danh sách động) -->
+    <TextView
+        android:id="@+id/tvAddressLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Địa chỉ giao hàng:"
+        android:textStyle="bold" />
+    <LinearLayout
+        android:id="@+id/containerAddresses"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Nút thêm địa chỉ (ẩn khi xem) -->
+    <Button
+        android:id="@+id/btnAddAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+ Thêm địa chỉ"
+        android:backgroundTint="#03DAC6"
+        android:textColor="#000"
+        android:visibility="gone"
         android:layout_marginBottom="16dp" />
 
-    <EditText
-        android:id="@+id/etEmail"
+    <!-- Nút Sửa / Lưu & Hủy -->
+    <LinearLayout
+        android:id="@+id/layoutButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
-        android:layout_marginBottom="8dp" />
+        android:orientation="horizontal">
 
-    <EditText
-        android:id="@+id/etUsername"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Tên đăng nhập"
-        android:inputType="text"
-        android:layout_marginBottom="8dp" />
+        <Button
+            android:id="@+id/btnEdit"
+            android:layout_width="288dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:backgroundTint="#6200EE"
+            android:text="Sửa thông tin"
+            android:textColor="#FFFFFF" />
 
-    <EditText
-        android:id="@+id/etFullname"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Họ và tên"
-        android:inputType="textPersonName"
-        android:layout_marginBottom="8dp" />
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Lưu"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF"
+            android:layout_marginStart="8dp"
+            android:visibility="gone" />
 
-    <EditText
-        android:id="@+id/etPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Mật khẩu (để lại trống nếu không đổi)"
-        android:inputType="textPassword"
-        android:layout_marginBottom="8dp" />
-
-    <EditText
-        android:id="@+id/etPhone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Số điện thoại"
-        android:inputType="phone"
-        android:layout_marginBottom="8dp" />
-
-    <EditText
-        android:id="@+id/etAddress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Địa chỉ"
-        android:inputType="textPostalAddress"
-        android:layout_marginBottom="8dp" />
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Hủy"
+            android:backgroundTint="#F44336"
+            android:textColor="#FFFFFF"
+            android:layout_marginStart="8dp"
+            android:visibility="gone" />
+    </LinearLayout>
 
     <Button
-        android:id="@+id/btnSave"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Lưu Thông Tin"
-        android:layout_marginTop="16dp" />
+        android:id="@+id/btnBackToMenu"
+        android:layout_width="100dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:backgroundTint="#6200EE"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="Menu"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp" />
 
 </LinearLayout>

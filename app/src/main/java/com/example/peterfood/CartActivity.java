@@ -64,33 +64,41 @@ public class CartActivity extends AppCompatActivity {
 
         btnCheckout.setOnClickListener(v -> showCheckoutDialog());
     }
-
     private void loadCartFromFirebase() {
         DocumentReference userDoc = db.collection("users").document(currentUser.getUid());
         userDoc.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
+                @SuppressWarnings("unchecked")
                 List<Map<String, Object>> cartData = (List<Map<String, Object>>) documentSnapshot.get("cart");
                 cartItems.clear();
                 if (cartData != null && !cartData.isEmpty()) {
                     for (Map<String, Object> itemData : cartData) {
                         String name = (String) itemData.get("name");
-                        int price = itemData.get("price") != null ? ((Long) itemData.get("price")).intValue() : 0;
+                        int price = itemData.get("price") != null ? ((Long) itemData.get  ("price")).intValue() : 0;
                         int quantity = itemData.get("quantity") != null ? ((Long) itemData.get("quantity")).intValue() : 1;
-                        String imageUrl = (String) itemData.get("imageUrl"); // ✅ THÊM LOAD IMAGEURL
-                        cartItems.add(new CartItem(name, price, quantity, imageUrl != null ? imageUrl : "")); // ✅ THÊM VÀO CONSTRUCTOR
+                        String imageUrl = (String) itemData.get("imageUrl");
+                        String note = (String) itemData.get("note"); // ĐỌC GHI CHÚ
+                        Log.d(TAG, "Item: " + name + ", Price: " + price + ", Quantity: " + quantity + ", Note: " + note);
+                        cartItems.add(new CartItem(name, price, quantity, imageUrl != null ? imageUrl : "", note != null ? note : ""));
                     }
+                    setupAdapter();
+                    updateTotalPrice();
+                    loadDeliveryAddress();
                 } else {
                     userDoc.update("cart", new ArrayList<>());
                     Toast.makeText(this, "Giỏ hàng trống", Toast.LENGTH_SHORT).show();
+                    setupAdapter();
+                    updateTotalPrice();
+                    loadDeliveryAddress();
                 }
-                setupAdapter();
-                updateTotalPrice();
-                loadDeliveryAddress();
             } else {
                 Map<String, Object> userData = new HashMap<>();
                 userData.put("cart", new ArrayList<>());
                 userDoc.set(userData);
                 Toast.makeText(this, "Giỏ hàng trống", Toast.LENGTH_SHORT).show();
+                setupAdapter();
+                updateTotalPrice();
+                loadDeliveryAddress();
             }
         }).addOnFailureListener(e -> {
             Log.e(TAG, "Lỗi load cart: " + e.getMessage());
@@ -99,15 +107,20 @@ public class CartActivity extends AppCompatActivity {
     }
 
     private void setupAdapter() {
-        cartAdapter = new CartAdapter(cartItems, this, position -> {
-            cartItems.remove(position);
-            cartAdapter.notifyDataSetChanged();
-            updateTotalPrice(); // Sẽ gọi saveCartToFirebase()
-        });
-        rvCart.setLayoutManager(new LinearLayoutManager(this));
-        rvCart.setAdapter(cartAdapter);
+        if (rvCart != null) {
+            cartAdapter = new CartAdapter(cartItems, this, position -> {
+                // Xóa trong list
+                cartItems.remove(position);
+                cartAdapter.notifyItemRemoved(position);
+                cartAdapter.notifyItemRangeChanged(position, cartItems.size());
+                // Lưu ngay
+                saveCartToFirebase();
+                updateTotalPrice();
+            });
+            rvCart.setLayoutManager(new LinearLayoutManager(this));
+            rvCart.setAdapter(cartAdapter);
+        }
     }
-
     public void updateTotalPrice() {
         int total = 0;
         for (CartItem item : cartItems) {
@@ -115,6 +128,10 @@ public class CartActivity extends AppCompatActivity {
         }
         tvTotalPrice.setText("Tổng cộng: " + total + " VNĐ");
         saveCartToFirebase();
+    }
+    // THÊM HÀM NÀY VÀO LỚP CartActivity
+    public void updateTotalPriceAndSave() {
+        updateTotalPrice(); // Gọi hàm cũ
     }
 
     private void saveCartToFirebase() {

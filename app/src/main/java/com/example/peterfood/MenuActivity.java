@@ -13,6 +13,7 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -50,13 +51,12 @@ public class MenuActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
-        // Tải logo tự động từ BaseActivity
         loadLogo();
 
         rvMenu = findViewById(R.id.rvMenu);
-        Button btnLogout = findViewById(R.id.btnLogout);
-        Button btnGoToCart = findViewById(R.id.btnGoToCart);
-        Button btnAddFood = findViewById(R.id.btnAddFood);
+        ImageButton btnLogout = findViewById(R.id.btnLogout);
+        ImageButton btnGoToCart = findViewById(R.id.btnGoToCart);
+        ImageButton btnAddFood = findViewById(R.id.btnAddFood);
         etSearch = findViewById(R.id.etSearch);
 
         if (rvMenu == null || btnLogout == null || btnGoToCart == null || btnAddFood == null || etSearch == null) {
@@ -81,19 +81,16 @@ public class MenuActivity extends BaseActivity {
         }
 
         etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
-            @Override
-            public void afterTextChanged(Editable s) {
-                filterFoodList(s.toString());
-            }
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) { filterFoodList(s.toString()); }
         });
 
         loadFoodList();
-        Button btnProfile = findViewById(R.id.btnProfile);
+
+        ImageButton btnProfile = findViewById(R.id.btnProfile);
         btnProfile.setOnClickListener(v -> startActivity(new Intent(MenuActivity.this, ProfileActivity.class)));
+
         btnLogout.setOnClickListener(v -> {
             mAuth.signOut();
             getSharedPreferences("UserPrefs", MODE_PRIVATE).edit().clear().apply();
@@ -139,19 +136,11 @@ public class MenuActivity extends BaseActivity {
         TextView tvRating = dialog.findViewById(R.id.tvFoodRating);
         Spinner spSize = dialog.findViewById(R.id.spSize);
         TextView tvSelectedPrice = dialog.findViewById(R.id.tvSelectedPrice);
-        EditText etReview = dialog.findViewById(R.id.etReview);
-        Button btnSubmitReview = dialog.findViewById(R.id.btnSubmitReview);
-        TextView tvComments = dialog.findViewById(R.id.tvComments);
-        LinearLayout llCommentSection = dialog.findViewById(R.id.llCommentSection);
+        EditText etNote = dialog.findViewById(R.id.etNote); // GHI CHÚ MỚI
         Button btnAddToCart = dialog.findViewById(R.id.btnAddToCart);
         Button btnDeleteFood = dialog.findViewById(R.id.btnDeleteFood);
         Button btnEditFood = dialog.findViewById(R.id.btnEditFood);
         Button btnClose = dialog.findViewById(R.id.btnClose);
-
-        if (llCommentSection == null) {
-            Toast.makeText(this, "Lỗi: Không tìm thấy phần bình luận", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
         tvName.setText(item.getName());
         tvDetailedDescription.setText(item.getDetailedDescription().isEmpty() ? "Chưa có mô tả chi tiết." : item.getDetailedDescription());
@@ -163,6 +152,8 @@ public class MenuActivity extends BaseActivity {
             tvSalePrice.setVisibility(View.GONE);
         }
         tvRating.setText("Đánh giá: " + item.getRating() + "/5");
+
+        Log.d(TAG, "FoodItem ImageUrl: " + item.getImageUrl());
         if (!item.getImageUrl().isEmpty()) {
             Glide.with(this)
                     .load(item.getImageUrl())
@@ -172,11 +163,10 @@ public class MenuActivity extends BaseActivity {
                     .into(ivImage);
         }
 
-        // Cài đặt Spinner cho size
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+        ArrayAdapter<CharSequence> sizeAdapter = ArrayAdapter.createFromResource(this,
                 R.array.food_sizes, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spSize.setAdapter(adapter);
+        sizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spSize.setAdapter(sizeAdapter);
         spSize.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -185,7 +175,6 @@ public class MenuActivity extends BaseActivity {
                 int finalPrice = (price != null) ? price.intValue() : item.getPrice();
                 tvSelectedPrice.setText("Giá đã chọn (" + selectedSize + "): " + finalPrice + " VNĐ");
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 tvSelectedPrice.setText("Giá đã chọn (Small): " + item.getPrice() + " VNĐ");
@@ -193,61 +182,8 @@ public class MenuActivity extends BaseActivity {
         });
         tvSelectedPrice.setText("Giá đã chọn (Small): " + item.getPrice() + " VNĐ");
 
-        // Xử lý đánh giá cho user
-        if ("user".equals(role)) {
-            etReview.setVisibility(View.VISIBLE);
-            btnSubmitReview.setVisibility(View.VISIBLE);
-            btnSubmitReview.setOnClickListener(v -> {
-                String review = etReview.getText().toString().trim();
-                if (!review.isEmpty()) {
-                    Map<String, Object> comment = new HashMap<>();
-                    comment.put("userId", mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : "Anonymous");
-                    comment.put("comment", review);
-                    comment.put("approved", false);
-                    item.getComments().add(comment);
-                    db.collection("NewFoodDB").document(item.getDocumentId())
-                            .update("comments", item.getComments())
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(this, "Đánh giá đã gửi, chờ duyệt!", Toast.LENGTH_SHORT).show();
-                                etReview.setText("");
-                                loadFoodList();
-                            })
-                            .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                } else {
-                    Toast.makeText(this, "Vui lòng nhập đánh giá!", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-
-        // Hiển thị và duyệt bình luận cho admin
-        if ("admin".equals(role)) {
-            llCommentSection.setVisibility(View.VISIBLE);
-            tvComments.setVisibility(View.VISIBLE);
-            for (Map<String, Object> comment : item.getComments()) {
-                TextView commentView = new TextView(this);
-                String userId = (String) comment.get("userId");
-                String text = (String) comment.get("comment");
-                boolean approved = comment.get("approved") != null && (boolean) comment.get("approved");
-                commentView.setText(userId + ": " + text + " (Đã duyệt: " + approved + ")");
-                commentView.setPadding(0, 8, 0, 8);
-                llCommentSection.addView(commentView);
-
-                Button btnApprove = new Button(this);
-                btnApprove.setText(approved ? "Ẩn" : "Duyệt");
-                btnApprove.setOnClickListener(v -> {
-                    comment.put("approved", !approved);
-                    db.collection("NewFoodDB").document(item.getDocumentId())
-                            .update("comments", item.getComments())
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(this, "Cập nhật trạng thái bình luận!", Toast.LENGTH_SHORT).show();
-                                llCommentSection.removeAllViews();
-                                showFoodDetailDialog(item);
-                            })
-                            .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                });
-                llCommentSection.addView(btnApprove);
-            }
-        }
+        // BỎ PHẦN BÌNH LUẬN HOÀN TOÀN
+        // Không còn etReview, btnSubmitReview, llCommentSection
 
         if (!"admin".equals(role)) {
             btnDeleteFood.setVisibility(View.GONE);
@@ -257,18 +193,28 @@ public class MenuActivity extends BaseActivity {
             btnEditFood.setVisibility(View.VISIBLE);
         }
 
+        // THÊM VÀO GIỎ + GHI CHÚ
         btnAddToCart.setOnClickListener(v -> {
             String selectedSize = spSize.getSelectedItem().toString();
             Long price = item.getSizePrices().get(selectedSize);
             int finalPrice = (price != null) ? price.intValue() : item.getPrice();
-            CartItem cartItem = new CartItem(item.getName() + " (" + selectedSize + ")", finalPrice, 1); // ✅ Sửa constructor: name, price, quantity
-            addItemToCart(cartItem); // ✅ Thay CartManager bằng hàm Firebase
-            Toast.makeText(this, "Đã thêm " + item.getName() + " (" + selectedSize + ") vào giỏ hàng", Toast.LENGTH_SHORT).show();
+            String note = etNote.getText().toString().trim(); // LẤY GHI CHÚ
+
+            CartItem cartItem = new CartItem(
+                    item.getName() + " (" + selectedSize + ")",
+                    finalPrice,
+                    1,
+                    item.getImageUrl(),
+                    note // TRUYỀN GHI CHÚ
+            );
+            Log.d(TAG, "Adding to cart: " + cartItem.getName() + ", Note: " + note);
+            addItemToCart(cartItem);
+            Toast.makeText(this, "Đã thêm vào giỏ!", Toast.LENGTH_SHORT).show();
             dialog.dismiss();
         });
 
         btnDeleteFood.setOnClickListener(v -> {
-            new AlertDialog.Builder(MenuActivity.this)
+            new AlertDialog.Builder(this)
                     .setTitle("Xác nhận xóa")
                     .setMessage("Bạn có chắc muốn xóa món " + item.getName() + "?")
                     .setPositiveButton("Xóa", (dialogInner, which) -> {
@@ -302,14 +248,19 @@ public class MenuActivity extends BaseActivity {
         itemData.put("name", newItem.getName());
         itemData.put("price", newItem.getPrice());
         itemData.put("quantity", newItem.getQuantity());
-        itemData.put("imageUrl", newItem.getImageUrl()); // ✅ THÊM VÀO FIREBASE
-        // ✅ Add vào array "cart" trên Firebase
+        itemData.put("imageUrl", newItem.getImageUrl());
+        itemData.put("note", newItem.getNote()); // LƯU GHI CHÚ
+
+        Log.d(TAG, "Saving cart item: " + newItem.getName() + ", Note: " + newItem.getNote());
+
         userDoc.update("cart", FieldValue.arrayUnion(itemData))
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Cart item saved with note: " + newItem.getNote());
+                    Toast.makeText(this, "Đã thêm vào giỏ!", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Lỗi thêm vào giỏ: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Lỗi add item: " + e.getMessage());
+                    Toast.makeText(this, "Lỗi thêm vào giỏ", Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -329,12 +280,6 @@ public class MenuActivity extends BaseActivity {
         Button btnSaveFood = dialog.findViewById(R.id.btnSaveFood);
         Button btnCancel = dialog.findViewById(R.id.btnCancel);
 
-        if (!"admin".equals(role)) {
-            etFoodSalePrice.setVisibility(View.GONE);
-            etMediumPrice.setVisibility(View.GONE);
-            etLargePrice.setVisibility(View.GONE);
-        }
-
         btnSaveFood.setOnClickListener(v -> {
             String name = etFoodName.getText().toString().trim();
             String description = etFoodDescription.getText().toString().trim();
@@ -352,7 +297,7 @@ public class MenuActivity extends BaseActivity {
             }
 
             int price, rating;
-            Long salePrice = null, mediumPrice = null, largePrice = null; // Sử dụng Long
+            Long salePrice = null, mediumPrice = null, largePrice = null;
             try {
                 price = Integer.parseInt(priceStr);
                 rating = Integer.parseInt(ratingStr);
@@ -381,16 +326,17 @@ public class MenuActivity extends BaseActivity {
             foodData.put("name", name);
             foodData.put("description", description.isEmpty() ? "Không có mô tả" : description);
             foodData.put("price", price);
-            foodData.put("salePrice", salePrice != null ? salePrice.intValue() : null); // Ép sang Integer nếu cần
+            foodData.put("salePrice", salePrice != null ? salePrice.intValue() : null);
             foodData.put("imageUrl", imageUrl.isEmpty() ? "" : imageUrl);
             foodData.put("rating", rating);
             foodData.put("detailedDescription", detailedDescription.isEmpty() ? "Chưa có mô tả chi tiết" : detailedDescription);
             foodData.put("sizePrices", sizePrices);
-            foodData.put("comments", new ArrayList<>());
+            foodData.put("comments", new ArrayList<>()); // Giữ lại nếu cần sau
 
             db.collection("NewFoodDB")
                     .add(foodData)
                     .addOnSuccessListener(documentReference -> {
+                        Log.d(TAG, "Added food: " + name);
                         Toast.makeText(this, "Đã thêm món ăn: " + name, Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
                         loadFoodList();
@@ -430,12 +376,6 @@ public class MenuActivity extends BaseActivity {
         etDetailedDescription.setText(item.getDetailedDescription());
         etMediumPrice.setText(item.getSizePrices().get("Medium") != null ? String.valueOf(item.getSizePrices().get("Medium")) : "");
         etLargePrice.setText(item.getSizePrices().get("Large") != null ? String.valueOf(item.getSizePrices().get("Large")) : "");
-
-        if (!"admin".equals(role)) {
-            etFoodSalePrice.setVisibility(View.GONE);
-            etMediumPrice.setVisibility(View.GONE);
-            etLargePrice.setVisibility(View.GONE);
-        }
 
         btnSaveFood.setText("Cập nhật");
 
@@ -525,7 +465,7 @@ public class MenuActivity extends BaseActivity {
                             Number rating = (Number) doc.get("rating");
                             String detailedDescription = doc.getString("detailedDescription");
                             @SuppressWarnings("unchecked")
-                            Map<String, Long> sizePrices = (Map<String, Long>) doc.get("sizePrices"); // Sửa thành Map<String, Long>
+                            Map<String, Long> sizePrices = (Map<String, Long>) doc.get("sizePrices");
                             @SuppressWarnings("unchecked")
                             List<Map<String, Object>> comments = (List<Map<String, Object>>) doc.get("comments");
 

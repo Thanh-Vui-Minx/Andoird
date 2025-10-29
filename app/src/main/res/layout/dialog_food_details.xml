@@ -4,15 +4,15 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp"
-    android:background="#FFFFFF">
+    android:background="#FFF8E1">
 
     <ImageView
         android:id="@+id/ivFoodImage"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_width="365dp"
+        android:layout_height="180dp"
+        android:contentDescription="Ảnh món ăn"
         android:scaleType="centerCrop"
-        android:src="@android:drawable/ic_menu_gallery"
-        android:contentDescription="Ảnh món ăn" />
+        android:src="@android:drawable/ic_menu_gallery" />
 
     <TextView
         android:id="@+id/tvFoodName"
@@ -93,6 +93,27 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="gone" />
+    <!-- Thêm vào cuối dialog_food_details.xml, trước btnAddToCart -->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ghi chú (không bắt buộc):"
+        android:textStyle="bold"
+        android:layout_marginTop="12dp" />
+
+    <EditText
+        android:id="@+id/etNote"
+        android:layout_width="365dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/edittext_rounded"
+        android:hint="VD: Không cay, ít hành, thêm tương ớt..."
+        android:inputType="textMultiLine"
+        android:lines="2"
+        android:maxLines="3"
+        android:padding="12dp" />
     <Button
         android:id="@+id/btnAddToCart"
         android:layout_width="match_parent"
