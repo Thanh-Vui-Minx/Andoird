@@ -4,9 +4,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#FFF8E1">
+    android:background="@color/background">
 
-    <!-- Tiêu đề + Nút quay lại -->
+    <!-- Header: avatar + name + email -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,80 +14,100 @@
         android:gravity="center_vertical"
         android:layout_marginBottom="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <ImageView
+            android:id="@+id/ivAvatar"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+        android:src="@android:drawable/ic_menu_myplaces"
+            android:contentDescription="Ảnh đại diện"
+            android:scaleType="centerCrop"
+            android:background="@android:color/darker_gray"
+            android:padding="8dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Thông Tin Người Dùng"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:orientation="vertical"
+            android:paddingStart="12dp">
 
+            <TextView
+                android:id="@+id/tvFullname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nguyễn Văn A"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/textPrimary" />
+
+            <TextView
+                android:id="@+id/tvEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="email@example.com"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/textSecondary" />
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- Email (không sửa) -->
-    <TextView
-        android:id="@+id/tvEmail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Email:"
-        android:textStyle="bold"
-        android:layout_marginTop="8dp" />
-
-    <!-- Tên đăng nhập -->
-    <TextView
-        android:id="@+id/tvUsernameLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Tên đăng nhập:"
-        android:textStyle="bold" />
-    <TextView
-        android:id="@+id/tvUsername"
+    <!-- Account fields -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="username"
-        android:layout_marginBottom="8dp" />
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="@color/surface"
+        android:layout_marginBottom="12dp">
 
-    <!-- Họ tên -->
-    <TextView
-        android:id="@+id/tvFullnameLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Họ và tên:"
-        android:textStyle="bold" />
-    <TextView
-        android:id="@+id/tvFullname"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Nguyễn Văn A"
-        android:layout_marginBottom="8dp" />
+        <TextView
+            android:id="@+id/tvUsernameLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tên đăng nhập"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp"
+            android:textColor="@color/textPrimary" />
 
-    <!-- SĐT -->
-    <TextView
-        android:id="@+id/tvPhoneLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Số điện thoại:"
-        android:textStyle="bold" />
-    <TextView
-        android:id="@+id/tvPhone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="0123456789"
-        android:layout_marginBottom="8dp" />
+        <TextView
+            android:id="@+id/tvUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="username"
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/textSecondary" />
+
+        <TextView
+            android:id="@+id/tvPhoneLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Số điện thoại"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0123456789"
+            android:layout_marginBottom="8dp" />
+    </LinearLayout>
 
     <!-- Địa chỉ (danh sách động) -->
     <TextView
         android:id="@+id/tvAddressLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Địa chỉ giao hàng:"
-        android:textStyle="bold" />
+        android:text="Địa chỉ giao hàng"
+        android:textStyle="bold"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp" />
+
     <LinearLayout
         android:id="@+id/containerAddresses"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginTop="4dp"
         android:layout_marginBottom="8dp" />
 
     <!-- Nút thêm địa chỉ (ẩn khi xem) -->
@@ -96,61 +116,74 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="+ Thêm địa chỉ"
-        android:backgroundTint="#03DAC6"
-        android:textColor="#000"
+        style="@style/AppButton"
         android:visibility="gone"
         android:layout_marginBottom="16dp" />
 
-    <!-- Nút Sửa / Lưu & Hủy -->
+    <!-- Buttons: Edit / Save / Cancel in one row -->
     <LinearLayout
         android:id="@+id/layoutButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:weightSum="3">
 
         <Button
             android:id="@+id/btnEdit"
-            android:layout_width="288dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
             android:layout_weight="1"
-            android:backgroundTint="#6200EE"
-            android:text="Sửa thông tin"
-            android:textColor="#FFFFFF" />
+            android:text="Sửa"
+            style="@style/AppButton"
+            android:layout_marginEnd="8dp" />
 
         <Button
             android:id="@+id/btnSave"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:text="Lưu"
-            android:backgroundTint="#4CAF50"
-            android:textColor="#FFFFFF"
-            android:layout_marginStart="8dp"
+            style="@style/AppButton"
+            android:layout_marginEnd="8dp"
             android:visibility="gone" />
 
         <Button
             android:id="@+id/btnCancel"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:text="Hủy"
-            android:backgroundTint="#F44336"
-            android:textColor="#FFFFFF"
-            android:layout_marginStart="8dp"
+            style="@style/AppButton"
+            android:backgroundTint="@color/danger"
             android:visibility="gone" />
     </LinearLayout>
 
     <Button
-        android:id="@+id/btnBackToMenu"
-        android:layout_width="100dp"
+        android:id="@+id/btnOrderHistory"
+        android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_marginStart="16dp"
-        android:backgroundTint="#6200EE"
-        android:clickable="true"
-        android:focusable="true"
-        android:text="Menu"
-        android:textColor="#FFFFFF"
+        android:layout_marginTop="12dp"
+        style="@style/AppButton"
+        android:text="Lịch sử đơn hàng"
+        android:textSize="14sp" />
+
+    <Button
+        android:id="@+id/btnVouchers"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="12dp"
+        style="@style/AppButton"
+        android:text="Voucher"
+        android:textSize="14sp" />
+
+    <Button
+        android:id="@+id/btnBackToMenu"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="12dp"
+        style="@style/AppButton"
+        android:text="Quay về Menu"
         android:textSize="14sp" />
 
 </LinearLayout>

@@ -4,13 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="#FFF8E1">
+    android:background="@color/background">
 
     <!-- Header: Logo + Title -->
     <LinearLayout
         android:id="@+id/headerLayout"
-        android:layout_width="382dp"
-        android:layout_height="79dp"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -28,8 +28,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="PETER FOOD"
-            android:textAlignment="center"
-            android:textColor="#FF5722"
+            android:layout_gravity="center"
+            android:textColor="@color/primary"
             android:textSize="20sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -39,12 +39,12 @@
         android:id="@+id/etSearch"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Tìm kiếm món ăn..."
+    android:hint="Tìm kiếm món ăn..."
         android:inputType="text"
         android:drawableStart="@android:drawable/ic_menu_search"
         android:padding="12dp"
         android:background="@drawable/search_background"
-        android:layout_marginTop="16dp"
+    android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/headerLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -54,12 +54,12 @@
         android:id="@+id/rvMenu"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
+    android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/etSearch"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/taskBar"
-        android:background="#FFF8E1" />
+    android:background="@color/background" />
 
     <!-- Task Bar (Icon đẹp, có sẵn) -->
     <androidx.cardview.widget.CardView
@@ -79,59 +79,128 @@
             android:layout_height="match_parent"
             android:orientation="horizontal"
             android:gravity="center"
-            android:padding="4dp">
+                    android:padding="4dp">
 
             <!-- Thêm món ăn -->
-            <ImageButton
-                android:id="@+id/btnAddFood"
+            <LinearLayout
+                android:id="@+id/containerAddFood"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:src="@android:drawable/ic_menu_add"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:scaleType="centerInside"
-                android:contentDescription="Thêm món ăn"
-                android:padding="8dp"
-                app:tint="#4CAF50" />
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="4dp">
+
+                    <ImageButton
+                    android:id="@+id/btnAddFood"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_add"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:scaleType="centerInside"
+                    android:contentDescription="Thêm"
+                    android:padding="8dp"
+                    app:tint="@color/secondary" />
+
+                    <TextView
+                    android:id="@+id/tvAddFoodLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Thêm"
+                    android:textSize="12sp"
+                        android:textColor="@color/secondary"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
 
             <!-- Giỏ hàng -->
-            <ImageButton
-                android:id="@+id/btnGoToCart"
+            <LinearLayout
+                android:id="@+id/containerCart"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:src="@android:drawable/sym_contact_card"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:scaleType="centerInside"
-                android:contentDescription="Giỏ hàng"
-                android:padding="8dp"
-                app:tint="#2196F3" />
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="4dp">
+
+                <ImageButton
+                    android:id="@+id/btnGoToCart"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_agenda"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:scaleType="centerInside"
+                    android:contentDescription="Giỏ"
+                    android:padding="8dp"
+                    app:tint="@color/primaryDark" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Giỏ"
+                    android:textSize="12sp"
+                    android:textColor="@color/primaryDark"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
 
             <!-- Profile -->
-            <ImageButton
-                android:id="@+id/btnProfile"
+            <LinearLayout
+                android:id="@+id/containerProfile"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:src="?attr/actionModePasteDrawable"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:scaleType="centerInside"
-                android:contentDescription="Hồ sơ"
-                android:padding="8dp"
-                app:tint="#9C27B0" />
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="4dp">
+
+                <ImageButton
+                    android:id="@+id/btnProfile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_myplaces"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:scaleType="centerInside"
+                    android:contentDescription="Hồ sơ"
+                    android:padding="8dp"
+                    app:tint="@color/accent" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hồ sơ"
+                    android:textSize="12sp"
+                    android:textColor="@color/accent"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
 
             <!-- Đăng xuất -->
-            <ImageButton
-                android:id="@+id/btnLogout"
+            <LinearLayout
+                android:id="@+id/containerLogout"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:scaleType="centerInside"
-                android:contentDescription="Đăng xuất"
-                android:padding="8dp"
-                app:tint="#F44336" />
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="4dp">
+
+                <ImageButton
+                    android:id="@+id/btnLogout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:scaleType="centerInside"
+                    android:contentDescription="Đăng xuất"
+                    android:padding="8dp"
+                    app:tint="@color/danger" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Thoát"
+                    android:textSize="12sp"
+                    android:textColor="@color/danger"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

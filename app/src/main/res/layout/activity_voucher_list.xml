@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/background">
+
+    <TextView
+        android:id="@+id/tvVoucherTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Quản lý voucher"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/textPrimary" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvVouchers"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/tvEmptyVouchers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Chưa có voucher nào"
+        android:textColor="@color/textSecondary"
+        android:visibility="gone"
+        android:gravity="center"
+        android:layout_marginTop="12dp" />
+
+    <!-- Bottom taskbar: move top buttons here so screens have a consistent bottom control bar -->
+    <LinearLayout
+        android:id="@+id/bottomTaskbarVouchers"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal"
+        android:background="@color/surface"
+        android:padding="8dp">
+
+        <LinearLayout
+            android:id="@+id/containerLeftVouchers"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btnBackVouchers"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Quay lại"
+                style="@style/AppButton" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/containerRightVouchers"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btnAddVoucher"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Thêm voucher"
+                style="@style/AppButton" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>

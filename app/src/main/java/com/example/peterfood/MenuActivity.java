@@ -55,8 +55,13 @@ public class MenuActivity extends BaseActivity {
 
         rvMenu = findViewById(R.id.rvMenu);
         ImageButton btnLogout = findViewById(R.id.btnLogout);
-        ImageButton btnGoToCart = findViewById(R.id.btnGoToCart);
-        ImageButton btnAddFood = findViewById(R.id.btnAddFood);
+    ImageButton btnGoToCart = findViewById(R.id.btnGoToCart);
+    ImageButton btnAddFood = findViewById(R.id.btnAddFood);
+    TextView tvAddFoodLabel = findViewById(R.id.tvAddFoodLabel);
+    View containerAddFood = findViewById(R.id.containerAddFood);
+    View containerCart = findViewById(R.id.containerCart);
+    View containerProfile = findViewById(R.id.containerProfile);
+    View containerLogout = findViewById(R.id.containerLogout);
         etSearch = findViewById(R.id.etSearch);
 
         if (rvMenu == null || btnLogout == null || btnGoToCart == null || btnAddFood == null || etSearch == null) {
@@ -75,9 +80,18 @@ public class MenuActivity extends BaseActivity {
 
         role = getSharedPreferences("UserPrefs", MODE_PRIVATE).getString("role", "user");
         if (!"admin".equals(role)) {
-            btnAddFood.setVisibility(View.GONE);
+            // hide the entire add-food container so other items re-distribute evenly
+            if (containerAddFood != null) containerAddFood.setVisibility(View.GONE);
+            else {
+                btnAddFood.setVisibility(View.GONE);
+                if (tvAddFoodLabel != null) tvAddFoodLabel.setVisibility(View.GONE);
+            }
         } else {
-            btnAddFood.setVisibility(View.VISIBLE);
+            if (containerAddFood != null) containerAddFood.setVisibility(View.VISIBLE);
+            else {
+                btnAddFood.setVisibility(View.VISIBLE);
+                if (tvAddFoodLabel != null) tvAddFoodLabel.setVisibility(View.VISIBLE);
+            }
         }
 
         etSearch.addTextChangedListener(new TextWatcher() {
@@ -134,8 +148,12 @@ public class MenuActivity extends BaseActivity {
         TextView tvPrice = dialog.findViewById(R.id.tvFoodPrice);
         TextView tvSalePrice = dialog.findViewById(R.id.tvFoodSalePrice);
         TextView tvRating = dialog.findViewById(R.id.tvFoodRating);
-        Spinner spSize = dialog.findViewById(R.id.spSize);
-        TextView tvSelectedPrice = dialog.findViewById(R.id.tvSelectedPrice);
+    Spinner spSize = dialog.findViewById(R.id.spSize);
+    TextView tvSelectedPrice = dialog.findViewById(R.id.tvSelectedPrice);
+    final EditText etReview = dialog.findViewById(R.id.etReview);
+    final Button btnSubmitReview = dialog.findViewById(R.id.btnSubmitReview);
+    final LinearLayout llCommentSection = dialog.findViewById(R.id.llCommentSection);
+    final android.widget.RatingBar rbReviewRating = dialog.findViewById(R.id.rbReviewRating);
         EditText etNote = dialog.findViewById(R.id.etNote); // GHI CHÚ MỚI
         Button btnAddToCart = dialog.findViewById(R.id.btnAddToCart);
         Button btnDeleteFood = dialog.findViewById(R.id.btnDeleteFood);
@@ -182,8 +200,47 @@ public class MenuActivity extends BaseActivity {
         });
         tvSelectedPrice.setText("Giá đã chọn (Small): " + item.getPrice() + " VNĐ");
 
-        // BỎ PHẦN BÌNH LUẬN HOÀN TOÀN
-        // Không còn etReview, btnSubmitReview, llCommentSection
+        // Show review input for logged-in non-admin users
+        if (mAuth.getCurrentUser() != null && !"admin".equals(role)) {
+            etReview.setVisibility(View.VISIBLE);
+            btnSubmitReview.setVisibility(View.VISIBLE);
+            rbReviewRating.setVisibility(View.VISIBLE);
+        } else {
+            etReview.setVisibility(View.GONE);
+            btnSubmitReview.setVisibility(View.GONE);
+            rbReviewRating.setVisibility(View.GONE);
+        }
+
+        // Render approved comments into llCommentSection
+        llCommentSection.removeAllViews();
+        List<Map<String, Object>> comments = item.getComments();
+        if (comments != null && !comments.isEmpty()) {
+            llCommentSection.setVisibility(View.VISIBLE);
+            for (Map<String, Object> c : comments) {
+                boolean approved = false;
+                if (c.get("approved") instanceof Boolean) approved = (Boolean) c.get("approved");
+                // show only approved comments to regular users; admins could see all but keep simple
+                if (approved) {
+                    String userId = c.get("userId") != null ? c.get("userId").toString() : "User";
+                    String commentText = c.get("comment") != null ? c.get("comment").toString() : "";
+                    String ratingStr = c.get("rating") != null ? String.valueOf(((Number) c.get("rating")).intValue()) : "0";
+                    TextView tv = new TextView(this);
+                    tv.setText("★" + ratingStr + " — " + commentText + "\n- " + userId);
+                    tv.setPadding(0, 8, 0, 8);
+                    llCommentSection.addView(tv);
+                } else {
+                    // if current user posted this comment and it's not approved yet, show pending
+                    if (mAuth.getCurrentUser() != null && mAuth.getCurrentUser().getUid().equals(String.valueOf(c.get("userId")))) {
+                        TextView tv = new TextView(this);
+                        tv.setText("(Đang chờ duyệt) " + (c.get("comment") != null ? c.get("comment").toString() : ""));
+                        tv.setPadding(0, 8, 0, 8);
+                        llCommentSection.addView(tv);
+                    }
+                }
+            }
+        } else {
+            llCommentSection.setVisibility(View.GONE);
+        }
 
         if (!"admin".equals(role)) {
             btnDeleteFood.setVisibility(View.GONE);
@@ -192,6 +249,44 @@ public class MenuActivity extends BaseActivity {
             btnDeleteFood.setVisibility(View.VISIBLE);
             btnEditFood.setVisibility(View.VISIBLE);
         }
+
+        // Submit review handler
+        btnSubmitReview.setOnClickListener(v -> {
+            if (mAuth.getCurrentUser() == null) {
+                Toast.makeText(this, "Vui lòng đăng nhập để đánh giá", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String reviewText = etReview.getText().toString().trim();
+            int reviewRating = (int) rbReviewRating.getRating();
+            if (reviewText.isEmpty() || reviewRating <= 0) {
+                Toast.makeText(this, "Vui lòng nhập nội dung đánh giá và chọn số sao", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Map<String, Object> commentMap = new HashMap<>();
+            commentMap.put("userId", mAuth.getCurrentUser().getUid());
+            commentMap.put("comment", reviewText);
+            commentMap.put("approved", false); // admin will approve
+            commentMap.put("rating", reviewRating);
+            commentMap.put("timestamp", FieldValue.serverTimestamp());
+
+            db.collection("NewFoodDB").document(item.getDocumentId())
+                    .update("comments", FieldValue.arrayUnion(commentMap))
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Đã gửi đánh giá. Vui lòng chờ duyệt.", Toast.LENGTH_SHORT).show();
+                        // show pending locally
+                        TextView tv = new TextView(this);
+                        tv.setText("(Đang chờ duyệt) " + reviewText);
+                        tv.setPadding(0, 8, 0, 8);
+                        llCommentSection.setVisibility(View.VISIBLE);
+                        llCommentSection.addView(tv, 0);
+                        etReview.setText("");
+                        rbReviewRating.setRating(0);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Lỗi khi gửi đánh giá: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        });
 
         // THÊM VÀO GIỎ + GHI CHÚ
         btnAddToCart.setOnClickListener(v -> {

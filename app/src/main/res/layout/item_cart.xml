@@ -6,12 +6,12 @@
     android:layout_margin="8dp"
     app:cardCornerRadius="8dp"
     app:cardElevation="4dp"
-    android:background="#FFF8E1">
+    android:background="@color/surface">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="20dp">
+    android:padding="12dp">
 
         <ImageView
             android:id="@+id/ivImage"
@@ -29,6 +29,7 @@
             android:text="Tên sản phẩm"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:textColor="@color/textPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/ivImage"
             app:layout_constraintTop_toTopOf="@+id/ivImage" />
@@ -39,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Ghi chú: Không cay"
-            android:textColor="#920303"
+            android:textColor="@color/textSecondary"
             android:textSize="13sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/tvName"
@@ -52,6 +53,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="32dp"
             android:text="0 VNĐ"
+            android:textColor="@color/primary"
             app:layout_constraintStart_toStartOf="@id/tvName"
             app:layout_constraintTop_toBottomOf="@id/tvName" />
 
@@ -62,6 +64,7 @@
             android:layout_marginTop="8dp"
             android:text="-"
             android:textSize="16sp"
+            style="@style/AppButton"
             app:layout_constraintStart_toStartOf="@id/tvPrice"
             app:layout_constraintTop_toBottomOf="@id/tvPrice" />
 
@@ -73,6 +76,7 @@
             android:gravity="center"
             android:text="1"
             android:textSize="16sp"
+            android:textColor="@color/textPrimary"
             app:layout_constraintStart_toEndOf="@id/btnMinus"
             app:layout_constraintTop_toTopOf="@id/btnMinus" />
 
@@ -83,15 +87,18 @@
             android:layout_marginStart="8dp"
             android:text="+"
             android:textSize="16sp"
+            style="@style/AppButton"
             app:layout_constraintStart_toEndOf="@id/tvQuantity"
             app:layout_constraintTop_toTopOf="@id/tvQuantity" />
 
         <Button
             android:id="@+id/btnRemove"
             android:layout_width="80dp"
-            android:layout_height="59dp"
+            android:layout_height="48dp"
             android:layout_marginBottom="8dp"
             android:text="Xóa"
+            style="@style/AppButton"
+            android:backgroundTint="@color/danger"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

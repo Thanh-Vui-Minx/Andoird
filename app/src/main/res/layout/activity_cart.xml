@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#FFF8E1">
+    android:background="@color/background">
 
     <TextView
         android:layout_width="match_parent"
@@ -26,6 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Địa chỉ giao hàng: Đang tải..."
+        android:textColor="@color/textSecondary"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp" />
 
@@ -36,6 +37,7 @@
         android:text="Tổng cộng: 0 VNĐ"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:textColor="@color/textPrimary"
         android:layout_marginBottom="16dp" />
 
     <Button
@@ -43,6 +45,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Thanh Toán"
+        style="@style/AppButton"
         android:layout_marginBottom="8dp" />
 
     <Button
@@ -50,6 +53,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Quay Lại"
-        android:onClick="onBackPressed" />
+        android:onClick="onBackPressed"
+        style="@style/AppButton"
+        android:backgroundTint="@color/danger" />
 
 </LinearLayout>

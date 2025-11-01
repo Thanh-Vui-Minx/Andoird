@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#FFF8E1">
+    android:background="@color/background">
 
     <TextView
         android:id="@+id/tvTotal"
@@ -12,19 +12,23 @@
         android:layout_height="wrap_content"
         android:text="Tổng tiền: 0 VNĐ"
         android:textSize="20sp"
+        android:textColor="@color/textPrimary"
         android:layout_marginBottom="16dp" />
 
     <Button
         android:id="@+id/btnConfirmPayment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Xác Nhận Thanh Toán" />
+        android:text="Xác Nhận Thanh Toán"
+        style="@style/AppButton" />
 
     <Button
         android:id="@+id/btnBack"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Quay Lại"
-        android:layout_marginTop="8dp" />
+        style="@style/AppButton"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/danger" />
 
 </LinearLayout>

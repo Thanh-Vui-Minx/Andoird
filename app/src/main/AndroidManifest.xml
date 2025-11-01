@@ -22,6 +22,8 @@
         </activity>
         <activity android:name=".SignupActivity" />
         <activity android:name=".MenuActivity" />
+    <activity android:name=".OrderHistoryActivity" />
+        <activity android:name=".VoucherActivity" />
         <activity android:name=".CartActivity" />
         <activity android:name=".PaymentActivity" />
         <activity android:name=".ProfileActivity" />

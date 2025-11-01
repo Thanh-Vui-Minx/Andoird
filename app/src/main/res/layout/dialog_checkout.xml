@@ -4,14 +4,15 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#FFF8E1">
+    android:background="@color/surface">
     <TextView
         android:id="@+id/tvOrderSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Tóm tắt đơn hàng:"
         android:textSize="16sp"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:textColor="@color/textPrimary" />
 
     <TextView
         android:id="@+id/tvDeliveryAddressDialog"
@@ -26,19 +27,70 @@
         android:layout_height="wrap_content"
         android:hint="Cập nhật địa chỉ giao hàng"
         android:inputType="textPostalAddress"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:background="@color/surface" />
+
+    <!-- Payment method selection -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Phương thức thanh toán"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"
+        android:textColor="@color/textPrimary" />
+
+    <RadioGroup
+        android:id="@+id/rgPaymentMethod"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="8dp">
+
+        <RadioButton
+            android:id="@+id/rbCOD"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thanh toán khi nhận hàng (COD)" />
+
+        <RadioButton
+            android:id="@+id/rbATM"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chuyển khoản qua ATM" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/tvBankInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ngân hàng: ABC Bank\nSố tài khoản: 0123456789\nChủ tài khoản: PETER FOOD"
+        android:visibility="gone"
+        android:layout_marginBottom="8dp"
+        android:textColor="@color/textSecondary" />
+
+    <EditText
+        android:id="@+id/etBankRef"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Mã tham chiếu/chú thích chuyển khoản (tùy chọn)"
+        android:visibility="gone"
+        android:layout_marginBottom="8dp"
+        android:background="@color/surface" />
 
     <Button
         android:id="@+id/btnConfirmOrder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Xác Nhận Đặt Hàng"
+        style="@style/AppButton"
         android:layout_marginBottom="8dp" />
 
     <Button
         android:id="@+id/btnCancel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hủy" />
+        android:text="Hủy"
+        style="@style/AppButton"
+        android:backgroundTint="@color/danger" />
 
 </LinearLayout>

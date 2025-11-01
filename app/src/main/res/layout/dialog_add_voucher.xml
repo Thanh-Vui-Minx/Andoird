@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/etVoucherCode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Mã voucher" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+        <RadioButton
+            android:id="@+id/rbPercent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Phần trăm" />
+        <RadioButton
+            android:id="@+id/rbFixed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Giá cố định"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/etVoucherValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Giá trị (số)"
+        android:inputType="number"
+        android:layout_marginTop="8dp" />
+
+    <EditText
+        android:id="@+id/etVoucherExpiry"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Hạn dùng (tap để chọn ngày)"
+        android:focusable="false"
+        android:layout_marginTop="8dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="12dp">
+
+        <Button
+            android:id="@+id/btnCancelVoucher"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hủy"
+            style="@style/AppButton" />
+
+        <Button
+            android:id="@+id/btnSaveVoucher"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lưu"
+            style="@style/AppButton"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+</LinearLayout>

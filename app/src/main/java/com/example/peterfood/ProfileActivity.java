@@ -24,7 +24,7 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
     private static final String TAG = "ProfileActivity";
     private TextView tvEmail, tvUsername, tvFullname, tvPhone;
     private LinearLayout containerAddresses;
-    private Button btnEdit, btnSave, btnCancel, btnAddAddress, btnBackToMenu;
+    private Button btnEdit, btnSave, btnCancel, btnAddAddress, btnBackToMenu, btnOrderHistory, btnVouchers;
 
     private EditText etUsername, etFullname, etPhone;
     private List<EditText> addressEditTexts = new ArrayList<>();
@@ -68,8 +68,10 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
         btnEdit = findViewById(R.id.btnEdit);
         btnSave = findViewById(R.id.btnSave);
         btnCancel = findViewById(R.id.btnCancel);
-        btnAddAddress = findViewById(R.id.btnAddAddress);
-        btnBackToMenu = findViewById(R.id.btnBackToMenu);
+    btnAddAddress = findViewById(R.id.btnAddAddress);
+    btnBackToMenu = findViewById(R.id.btnBackToMenu);
+    btnOrderHistory = findViewById(R.id.btnOrderHistory);
+    btnVouchers = findViewById(R.id.btnVouchers);
 
         Log.d(TAG, "btnBackToMenu: " + btnBackToMenu);
         Log.d(TAG, "btnEdit: " + btnEdit);
@@ -90,6 +92,16 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
             });
         } else {
             Log.e(TAG, "btnBackToMenu is NULL! Không thể gán sự kiện!");
+        }
+
+        if (btnOrderHistory != null) {
+            btnOrderHistory.setOnClickListener(v -> {
+                startActivity(new Intent(ProfileActivity.this, OrderHistoryActivity.class));
+            });
+        }
+
+        if (btnVouchers != null) {
+            btnVouchers.setOnClickListener(v -> startActivity(new Intent(ProfileActivity.this, VoucherActivity.class)));
         }
     }
 
