@@ -28,14 +28,14 @@
                 <!-- Avatar tròn với viền -->
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/ivAvatar"
-                    android:layout_width="88dp"
-                    android:layout_height="88dp"
-                    android:src="@android:drawable/ic_menu_myplaces"
+                    android:layout_width="94dp"
+                    android:layout_height="85dp"
                     android:contentDescription="Ảnh đại diện"
-                    android:scaleType="centerCrop"
+                    android:scaleType="fitXY"
+                    android:src="@android:drawable/ic_menu_myplaces"
                     app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Circle"
                     app:strokeColor="?attr/colorPrimary"
-                    app:strokeWidth="3dp" />
+                    app:strokeWidth="5dp" />
 
                 <LinearLayout
                     android:layout_width="0dp"

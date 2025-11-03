@@ -15,8 +15,8 @@
 
         <ImageView
             android:id="@+id/ivImage"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="76dp"
+            android:layout_height="79dp"
             android:scaleType="centerCrop"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -59,46 +59,55 @@
 
         <Button
             android:id="@+id/btnMinus"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="8dp"
-            android:text="-"
-            android:textSize="16sp"
             style="@style/AppButton"
+            android:layout_width="55dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="4dp"
+            android:text="-"
+            android:textAlignment="viewStart"
+            android:textColor="@color/white"
+            android:textSize="16sp"
             app:layout_constraintStart_toStartOf="@id/tvPrice"
             app:layout_constraintTop_toBottomOf="@id/tvPrice" />
 
         <TextView
             android:id="@+id/tvQuantity"
-            android:layout_width="40dp"
-            android:layout_height="32dp"
+            android:layout_width="20dp"
+            android:layout_height="40dp"
             android:layout_marginStart="8dp"
+            android:backgroundTint="@color/danger"
             android:gravity="center"
             android:text="1"
-            android:textSize="16sp"
             android:textColor="@color/textPrimary"
+            android:textSize="16sp"
             app:layout_constraintStart_toEndOf="@id/btnMinus"
             app:layout_constraintTop_toTopOf="@id/btnMinus" />
 
         <Button
             android:id="@+id/btnPlus"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="8dp"
-            android:text="+"
-            android:textSize="16sp"
             style="@style/AppButton"
+            android:layout_width="55dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="52dp"
+            android:backgroundTint="@color/primary"
+            android:text="+"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toStartOf="@+id/btnRemove"
+            app:layout_constraintHorizontal_bias="0.041"
             app:layout_constraintStart_toEndOf="@id/tvQuantity"
             app:layout_constraintTop_toTopOf="@id/tvQuantity" />
 
         <Button
             android:id="@+id/btnRemove"
-            android:layout_width="80dp"
-            android:layout_height="48dp"
-            android:layout_marginBottom="8dp"
-            android:text="Xóa"
             style="@style/AppButton"
+            android:layout_width="74dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="24dp"
             android:backgroundTint="@color/danger"
+            android:text="Xóa"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
