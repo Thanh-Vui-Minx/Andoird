@@ -10,6 +10,8 @@ public class Voucher {
     private int value; // percent or fixed amount
     private long expiryMillis; // 0 if none
     private boolean active;
+    // transient flag to indicate this entry came from a user request (not an official voucher)
+    private boolean pendingRequest = false;
 
     public Voucher() {}
 
@@ -21,6 +23,9 @@ public class Voucher {
         this.expiryMillis = expiryMillis;
         this.active = active;
     }
+
+    public boolean isPendingRequest() { return pendingRequest; }
+    public void setPendingRequest(boolean pendingRequest) { this.pendingRequest = pendingRequest; }
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }

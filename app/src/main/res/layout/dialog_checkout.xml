@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="@color/surface">
+    android:background="@color/background">
     <TextView
         android:id="@+id/tvOrderSummary"
         android:layout_width="match_parent"
@@ -76,6 +76,24 @@
         android:visibility="gone"
         android:layout_marginBottom="8dp"
         android:background="@color/surface" />
+
+    <!-- Applied voucher display and add voucher button -->
+    <TextView
+        android:id="@+id/tvAppliedVoucher"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_marginBottom="8dp"
+        android:textColor="@color/primary"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnAddVoucher"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Thêm Voucher"
+        style="@style/AppButton"
+        android:layout_marginBottom="8dp" />
 
     <Button
         android:id="@+id/btnConfirmOrder"

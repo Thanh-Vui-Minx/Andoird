@@ -143,20 +143,20 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
 
             if (isEditing) {
                 // Chế độ sửa: EditText + Xóa
-                LinearLayout row = new LinearLayout(this);
+                final LinearLayout row = new LinearLayout(this);
                 row.setOrientation(LinearLayout.HORIZONTAL);
                 row.setLayoutParams(new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
                 row.setPadding(0, 4, 0, 4);
 
-                EditText etAddr = new EditText(this);
+                final EditText etAddr = new EditText(this);
                 etAddr.setText(addr);
                 etAddr.setLayoutParams(new LinearLayout.LayoutParams(0,
                         ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
                 addressEditTexts.add(etAddr);
                 row.addView(etAddr);
 
-                Button btnRemove = new Button(this);
+                final Button btnRemove = new Button(this);
                 btnRemove.setText("Xóa");
                 btnRemove.setBackgroundTintList(getColorStateList(android.R.color.holo_red_light));
                 btnRemove.setTextColor(getColor(android.R.color.white));

@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -284,8 +285,10 @@ public class CartActivity extends AppCompatActivity {
         final android.widget.RadioButton rbATM = dialog.findViewById(R.id.rbATM);
         final TextView tvBankInfo = dialog.findViewById(R.id.tvBankInfo);
         final EditText etBankRef = dialog.findViewById(R.id.etBankRef);
-        final Button btnConfirmOrder = dialog.findViewById(R.id.btnConfirmOrder);
-        final Button btnCancel = dialog.findViewById(R.id.btnCancel);
+    final Button btnConfirmOrder = dialog.findViewById(R.id.btnConfirmOrder);
+    final Button btnCancel = dialog.findViewById(R.id.btnCancel);
+    final Button btnAddVoucher = dialog.findViewById(R.id.btnAddVoucher);
+    final TextView tvAppliedVoucher = dialog.findViewById(R.id.tvAppliedVoucher);
 
         if (currentUser != null) {
             db.collection("users").document(currentUser.getUid())
@@ -310,7 +313,12 @@ public class CartActivity extends AppCompatActivity {
     summary.append("Tổng cộng: ").append(summaryTotal).append(" VNĐ");
         tvOrderSummary.setText(summary.toString());
 
-        btnConfirmOrder.setOnClickListener(v -> {
+        // voucher state for this checkout dialog
+        final int[] currentTotal = new int[]{summaryTotal};
+        final String[] appliedVoucherId = new String[]{null};
+        final int[] appliedDiscount = new int[]{0};
+
+    btnConfirmOrder.setOnClickListener(v -> {
             String newAddress = etUpdateAddress.getText().toString().trim();
             if (TextUtils.isEmpty(newAddress)) {
                 Toast.makeText(this, "Vui lòng nhập địa chỉ giao hàng", Toast.LENGTH_SHORT).show();
@@ -353,7 +361,8 @@ public class CartActivity extends AppCompatActivity {
                 ((List<Map<String, Object>>) orderData.get("items")).add(itemMap);
                 orderTotal += item.getTotalPrice();
             }
-            orderData.put("total", orderTotal);
+            orderData.put("total", orderTotal - appliedDiscount[0]);
+            if (appliedVoucherId[0] != null) orderData.put("voucherId", appliedVoucherId[0]);
             orderData.put("createdAt", com.google.firebase.firestore.FieldValue.serverTimestamp());
 
             // update user address then create order
@@ -424,8 +433,111 @@ public class CartActivity extends AppCompatActivity {
             }
         });
 
+        // Add voucher button: lets user pick from their claimed vouchers
+        int finalSummaryTotal = summaryTotal;
+        btnAddVoucher.setOnClickListener(v -> {
+            Log.d(TAG, "btnAddVoucher clicked");
+            if (currentUser == null) {
+                Toast.makeText(this, "Vui lòng đăng nhập để áp dụng voucher", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Toast.makeText(this, "Đang tải voucher...", Toast.LENGTH_SHORT).show();
+            // fetch user's claimed voucher ids
+            db.collection("users").document(currentUser.getUid()).get()
+                    .addOnSuccessListener(doc -> {
+                        List<String> claimed = (List<String>) doc.get("vouchers");
+                        if (claimed == null || claimed.isEmpty()) {
+                            Toast.makeText(this, "Bạn không có voucher đã thêm", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        // fetch voucher docs
+                        List<String> ids = new ArrayList<>(claimed);
+                        final CharSequence[] items = new CharSequence[ids.size()];
+                        final String[] vidMap = new String[ids.size()];
+                        final int[] discountVals = new int[ids.size()];
+                        final boolean[] isPercent = new boolean[ids.size()];
+                        final int[] loaded = new int[]{0};
+
+                        for (int i = 0; i < ids.size(); i++) {
+                            final int idx = i;
+                            final String vid = ids.get(i);
+                            vidMap[idx] = vid;
+                            // load each voucher doc
+                            db.collection("vouchers").document(vid).get()
+                                    .addOnSuccessListener(vdoc -> {
+                                        if (vdoc.exists()) {
+                                            String code = vdoc.getString("code");
+                                            Boolean percent = vdoc.getBoolean("percent");
+                                            Number value = (Number) vdoc.get("value");
+                                            int val = value != null ? value.intValue() : 0;
+                                            discountVals[idx] = val;
+                                            isPercent[idx] = percent != null ? percent : false;
+                                            items[idx] = code + " (" + (isPercent[idx] ? ("-" + val + "%") : ("-" + val + " VNĐ")) + ")";
+                                        } else {
+                                            items[idx] = "(đã xóa)";
+                                        }
+                                        loaded[0]++;
+                                        if (loaded[0] == ids.size()) {
+                                            // all loaded, show selection
+                                            new android.app.AlertDialog.Builder(this)
+                                                    .setTitle("Chọn voucher")
+                                                    .setItems(items, (d, which) -> {
+                                                        String chosenId = vidMap[which];
+                                                        boolean pct = isPercent[which];
+                                                        int val = discountVals[which];
+                                                        int discount = 0;
+                                                        if (pct) {
+                                                            discount = (int) Math.round(currentTotal[0] * (val / 100.0));
+                                                        } else {
+                                                            discount = val;
+                                                        }
+                                                        appliedVoucherId[0] = chosenId;
+                                                        appliedDiscount[0] = discount;
+                                                        currentTotal[0] = finalSummaryTotal - discount;
+                                                        tvAppliedVoucher.setVisibility(android.view.View.VISIBLE);
+                                                        tvAppliedVoucher.setText("Voucher áp dụng: " + items[which] + " → Giảm: " + discount + " VNĐ\nTổng sau giảm: " + currentTotal[0] + " VNĐ");
+                                                    })
+                                                    .setNegativeButton("Hủy", null)
+                                                    .show();
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        items[idx] = "(lỗi tải)";
+                                        loaded[0]++;
+                                        if (loaded[0] == ids.size()) {
+                                            new android.app.AlertDialog.Builder(this)
+                                                    .setTitle("Chọn voucher")
+                                                    .setItems(items, (d, which) -> {
+                                                        String chosenId = vidMap[which];
+                                                        boolean pct = isPercent[which];
+                                                        int val = discountVals[which];
+                                                        int discount = 0;
+                                                        if (pct) {
+                                                            discount = (int) Math.round(currentTotal[0] * (val / 100.0));
+                                                        } else {
+                                                            discount = val;
+                                                        }
+                                                        appliedVoucherId[0] = chosenId;
+                                                        appliedDiscount[0] = discount;
+                                                        currentTotal[0] = finalSummaryTotal - discount;
+                                                        tvAppliedVoucher.setVisibility(android.view.View.VISIBLE);
+                                                        tvAppliedVoucher.setText("Voucher áp dụng: " + items[which] + " → Giảm: " + discount + " VNĐ\nTổng sau giảm: " + currentTotal[0] + " VNĐ");
+                                                    })
+                                                    .setNegativeButton("Hủy", null)
+                                                    .show();
+                                        }
+                                    });
+                        }
+                    })
+                    .addOnFailureListener(e -> Toast.makeText(this, "Không thể tải voucher của bạn: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        });
+
         btnCancel.setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
+        // make dialog full-width to match other screens
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
     }
 }

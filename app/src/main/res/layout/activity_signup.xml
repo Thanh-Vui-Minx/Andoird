@@ -8,8 +8,8 @@
 
     <ImageView
         android:id="@+id/ivLogo"
-        android:layout_width="376dp"
-        android:layout_height="350dp"
+        android:layout_width="378dp"
+        android:layout_height="230dp"
         android:layout_marginBottom="30dp" />
     <TextView
         android:id="@+id/textView"
