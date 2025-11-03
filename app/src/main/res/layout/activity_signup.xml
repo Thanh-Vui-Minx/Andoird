@@ -10,7 +10,8 @@
         android:id="@+id/ivLogo"
         android:layout_width="378dp"
         android:layout_height="230dp"
-        android:layout_marginBottom="30dp" />
+        android:layout_marginBottom="30dp"
+        android:scaleType="centerInside" />
     <TextView
         android:id="@+id/textView"
         android:layout_width="match_parent"
