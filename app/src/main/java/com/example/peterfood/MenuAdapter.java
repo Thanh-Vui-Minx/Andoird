@@ -38,11 +38,35 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         FoodItem item = foodList.get(position);
 
-        // === HIỂN THỊ TÊN ===
+        // === SECTION HEADER: "COMBO GỢI Ý" HOẶC "TẤT CẢ MÓN ĂN" ===
+        if ("header_combo".equals(item.getDocumentId()) || "header_food".equals(item.getDocumentId())) {
+            holder.tvName.setText(item.getName());
+            holder.tvName.setTextSize(20);
+            holder.tvName.setTypeface(null, android.graphics.Typeface.BOLD);
+            holder.tvName.setTextColor(context.getResources().getColor(R.color.primary));
+
+            holder.tvDescription.setVisibility(View.GONE);
+            holder.tvPrice.setVisibility(View.GONE);
+            holder.tvRating.setVisibility(View.GONE);
+            holder.ivImage.setVisibility(View.GONE);
+            holder.tvComboBadge.setVisibility(View.GONE);
+            holder.tvSavings.setVisibility(View.GONE);
+            return;
+        }
+
+        // === HIỂN THỊ BÌNH THƯỜNG: COMBO HOẶC MÓN THƯỜNG ===
+        holder.tvDescription.setVisibility(View.VISIBLE);
+        holder.tvPrice.setVisibility(View.VISIBLE);
+        holder.tvRating.setVisibility(View.VISIBLE);
+        holder.ivImage.setVisibility(View.VISIBLE);
+
+        // === TÊN ===
         if (item.isCombo()) {
             holder.tvName.setText("COMBO " + item.getName());
+            holder.tvName.setTextColor(context.getResources().getColor(R.color.combo_text));
         } else {
             holder.tvName.setText(item.getName());
+            holder.tvName.setTextColor(context.getResources().getColor(android.R.color.black));
         }
 
         // === MÔ TẢ ===
@@ -51,12 +75,11 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
         // === GIÁ & KHUYẾN MÃI ===
         if (item.isCombo()) {
             int comboPrice = item.getPrice();           // Giá đã giảm
-            int originalPrice = item.getSalePrice();    // Giá gốc
+            int originalPrice = item.getSalePrice() != null ? item.getSalePrice() : item.getPrice();
             int savings = originalPrice - comboPrice;
 
             // Giá combo
             holder.tvPrice.setText(comboPrice + " VNĐ");
-            // Gạch ngang giá gốc
             holder.tvPrice.setPaintFlags(holder.tvPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
 
             // Tiết kiệm
@@ -74,7 +97,7 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
                 holder.tvSavings.setVisibility(View.VISIBLE);
             } else {
                 holder.tvPrice.setText(item.getPrice() + " VNĐ");
-                holder.tvPrice.setPaintFlags(0); // Xóa gạch
+                holder.tvPrice.setPaintFlags(0);
                 holder.tvSavings.setVisibility(View.GONE);
             }
             holder.tvComboBadge.setVisibility(View.GONE);
@@ -107,7 +130,7 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivImage;
         TextView tvName, tvDescription, tvPrice, tvRating;
-        TextView tvComboBadge, tvSavings;  // MỚI: Badge + tiết kiệm
+        TextView tvComboBadge, tvSavings;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -116,8 +139,6 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
             tvDescription = itemView.findViewById(R.id.tvFoodDescription);
             tvPrice = itemView.findViewById(R.id.tvFoodPrice);
             tvRating = itemView.findViewById(R.id.tvFoodRating);
-
-            // THÊM MỚI: Badge và tiết kiệm
             tvComboBadge = itemView.findViewById(R.id.tvComboBadge);
             tvSavings = itemView.findViewById(R.id.tvSavings);
         }

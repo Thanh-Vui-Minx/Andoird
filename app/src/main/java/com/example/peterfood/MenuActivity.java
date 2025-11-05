@@ -4,6 +4,7 @@ import java.util.stream.Collectors;  // Để dùng stream (nếu Java 8+)
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -58,13 +59,13 @@ public class MenuActivity extends BaseActivity {
 
         rvMenu = findViewById(R.id.rvMenu);
         ImageButton btnLogout = findViewById(R.id.btnLogout);
-    ImageButton btnGoToCart = findViewById(R.id.btnGoToCart);
-    ImageButton btnAddFood = findViewById(R.id.btnAddFood);
-    TextView tvAddFoodLabel = findViewById(R.id.tvAddFoodLabel);
-    View containerAddFood = findViewById(R.id.containerAddFood);
-    View containerCart = findViewById(R.id.containerCart);
-    View containerProfile = findViewById(R.id.containerProfile);
-    View containerLogout = findViewById(R.id.containerLogout);
+        ImageButton btnGoToCart = findViewById(R.id.btnGoToCart);
+        ImageButton btnAddFood = findViewById(R.id.btnAddFood);
+        TextView tvAddFoodLabel = findViewById(R.id.tvAddFoodLabel);
+        View containerAddFood = findViewById(R.id.containerAddFood);
+        View containerCart = findViewById(R.id.containerCart);
+        View containerProfile = findViewById(R.id.containerProfile);
+        View containerLogout = findViewById(R.id.containerLogout);
         etSearch = findViewById(R.id.etSearch);
 
         if (rvMenu == null || btnLogout == null || btnGoToCart == null || btnAddFood == null || etSearch == null) {
@@ -119,90 +120,6 @@ public class MenuActivity extends BaseActivity {
         btnGoToCart.setOnClickListener(v -> startActivity(new Intent(MenuActivity.this, CartActivity.class)));
         btnAddFood.setOnClickListener(v -> showAddFoodDialog());
     }
-    private void generateSmartCombos() {
-        List<FoodItem> foods = foodList.stream()
-                .filter(item -> "thức ăn".equals(item.getTag()))
-                .collect(Collectors.toList());
-        List<FoodItem> drinks = foodList.stream()
-                .filter(item -> "nước".equals(item.getTag()))
-                .collect(Collectors.toList());
-
-        comboList.clear();
-
-        // Combo 1: 1 ăn + 1 nước → giảm 10%
-        if (!foods.isEmpty() && !drinks.isEmpty()) {
-            FoodItem food = foods.get(0);  // Lấy món đầu tiên (có thể randomize sau)
-            FoodItem drink = drinks.get(0);
-            int original = food.getPrice() + drink.getPrice();
-            int comboPrice = (int) (original * 0.9);
-            ComboItem combo = new ComboItem(
-                    "combo_1_1",
-                    food.getName() + " + " + drink.getName(),
-                    "Combo đôi - Tiết kiệm 10%",
-                    comboPrice,
-                    original,
-                    food.getImageUrl(),  // Ảnh từ món ăn chính
-                    List.of(food.getDocumentId(), drink.getDocumentId()),
-                    Map.of(food.getDocumentId(), 1, drink.getDocumentId(), 1)
-            );
-            comboList.add(combo);
-        }
-
-        // Combo 2: 2 ăn + 3 nước → giảm 15%
-        if (foods.size() >= 2 && drinks.size() >= 3) {
-            List<FoodItem> foodCombo = foods.subList(0, 2);
-            List<FoodItem> drinkCombo = drinks.subList(0, 3);
-            int original = foodCombo.stream().mapToInt(FoodItem::getPrice).sum() +
-                    drinkCombo.stream().mapToInt(FoodItem::getPrice).sum();
-            int comboPrice = (int) (original * 0.85);
-            String name = String.join(" + ", foodCombo.stream().map(FoodItem::getName).collect(Collectors.toList())) +
-                    " + " + String.join(" + ", drinkCombo.stream().map(FoodItem::getName).collect(Collectors.toList()));
-            if (name.length() > 50) name = name.substring(0, 47) + "...";
-            ComboItem combo = new ComboItem(
-                    "combo_2_3",
-                    name,
-                    "Combo lớn - Tiết kiệm 15%",
-                    comboPrice,
-                    original,
-                    foodCombo.get(0).getImageUrl(),
-                    java.util.stream.Stream.concat(
-                            foodCombo.stream().map(FoodItem::getDocumentId),
-                            drinkCombo.stream().map(FoodItem::getDocumentId)
-                    ).collect(Collectors.toList()),
-                    java.util.stream.Stream.concat(
-                            foodCombo.stream().map(f -> java.util.Map.entry(f.getDocumentId(), 1)),
-                            drinkCombo.stream().map(d -> java.util.Map.entry(d.getDocumentId(), 1))
-                    ).collect(Collectors.toMap(java.util.Map.Entry::getKey, java.util.Map.Entry::getValue))
-            );
-            comboList.add(combo);
-        }
-
-        // Combo 3: 4 ăn + 6 nước → giảm 20%
-        if (foods.size() >= 4 && drinks.size() >= 6) {
-            List<FoodItem> foodCombo = foods.subList(0, 4);
-            List<FoodItem> drinkCombo = drinks.subList(0, 6);
-            int original = foodCombo.stream().mapToInt(FoodItem::getPrice).sum() +
-                    drinkCombo.stream().mapToInt(FoodItem::getPrice).sum();
-            int comboPrice = (int) (original * 0.8);
-            ComboItem combo = new ComboItem(
-                    "combo_4_6",
-                    "Combo Gia Đình Siêu Tiết Kiệm",
-                    "4 ăn + 6 nước - Tiết kiệm 20%",
-                    comboPrice,
-                    original,
-                    foodCombo.get(0).getImageUrl(),
-                    java.util.stream.Stream.concat(
-                            foodCombo.stream().map(FoodItem::getDocumentId),
-                            drinkCombo.stream().map(FoodItem::getDocumentId)
-                    ).collect(Collectors.toList()),
-                    java.util.stream.Stream.concat(
-                            foodCombo.stream().map(f -> java.util.Map.entry(f.getDocumentId(), 1)),
-                            drinkCombo.stream().map(d -> java.util.Map.entry(d.getDocumentId(), 1))
-                    ).collect(Collectors.toMap(java.util.Map.Entry::getKey, java.util.Map.Entry::getValue))
-            );
-            comboList.add(combo);
-        }
-    }
 
     private void filterFoodList(String query) {
         filteredFoodList.clear();
@@ -222,238 +139,181 @@ public class MenuActivity extends BaseActivity {
     }
 
     private void showFoodDetailDialog(FoodItem item) {
+        Log.d("Dialog", "showFoodDetailDialog called for: " + item.getName());
+
+        // BỎ QUA HEADER
+        if ("header_combo".equals(item.getDocumentId()) || "header_food".equals(item.getDocumentId())) {
+            Log.d("Dialog", "Header clicked - ignored");
+            return;
+        }
+
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_food_details);
-        Window window = dialog.getWindow();
-        if (window != null) {
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
 
-        ImageView ivImage = dialog.findViewById(R.id.ivFoodImage);
-        TextView tvName = dialog.findViewById(R.id.tvFoodName);
+        // === TÌM TẤT CẢ VIEW ===
+        ImageView ivFoodImage = dialog.findViewById(R.id.ivFoodImage);
+        TextView tvFoodName = dialog.findViewById(R.id.tvFoodName);
         TextView tvDetailedDescription = dialog.findViewById(R.id.tvDetailedDescription);
-        TextView tvPrice = dialog.findViewById(R.id.tvFoodPrice);
-        TextView tvSalePrice = dialog.findViewById(R.id.tvFoodSalePrice);
-        TextView tvRating = dialog.findViewById(R.id.tvFoodRating);
-    Spinner spSize = dialog.findViewById(R.id.spSize);
-    TextView tvSelectedPrice = dialog.findViewById(R.id.tvSelectedPrice);
-    final EditText etReview = dialog.findViewById(R.id.etReview);
-    final Button btnSubmitReview = dialog.findViewById(R.id.btnSubmitReview);
-    final LinearLayout llCommentSection = dialog.findViewById(R.id.llCommentSection);
-    final android.widget.RatingBar rbReviewRating = dialog.findViewById(R.id.rbReviewRating);
-        EditText etNote = dialog.findViewById(R.id.etNote); // GHI CHÚ MỚI
+        TextView tvFoodPrice = dialog.findViewById(R.id.tvFoodPrice);
+        TextView tvFoodSalePrice = dialog.findViewById(R.id.tvFoodSalePrice);
+        TextView tvFoodRating = dialog.findViewById(R.id.tvFoodRating);
+        TextView tvSelectedPrice = dialog.findViewById(R.id.tvSelectedPrice);
+        Spinner spSize = dialog.findViewById(R.id.spSize);
+        EditText etNote = dialog.findViewById(R.id.etNote);
         Button btnAddToCart = dialog.findViewById(R.id.btnAddToCart);
-        Button btnDeleteFood = dialog.findViewById(R.id.btnDeleteFood);
         Button btnEditFood = dialog.findViewById(R.id.btnEditFood);
+        Button btnDeleteFood = dialog.findViewById(R.id.btnDeleteFood);
         Button btnClose = dialog.findViewById(R.id.btnClose);
 
-        tvName.setText(item.getName());
-        tvDetailedDescription.setText(item.getDetailedDescription().isEmpty() ? "Chưa có mô tả chi tiết." : item.getDetailedDescription());
-        tvPrice.setText("Giá cơ bản: " + item.getPrice() + " VNĐ");
-        if (item.getSalePrice() != null && item.getSalePrice() < item.getPrice()) {
-            tvSalePrice.setText("Giá giảm: " + item.getSalePrice() + " VNĐ");
-            tvSalePrice.setVisibility(View.VISIBLE);
+        // === KIỂM TRA NULL ===
+        if (tvFoodName == null || tvFoodPrice == null || btnAddToCart == null) {
+            Log.e("Dialog", "Một số view bị null! Kiểm tra dialog_food_details.xml");
+            Toast.makeText(this, "Lỗi layout dialog", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // === ẢNH ===
+        Glide.with(this)
+                .load(item.getImageUrl())
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .error(android.R.drawable.ic_menu_report_image)
+                .into(ivFoodImage);
+
+        // === ĐÁNH GIÁ ===
+        tvFoodRating.setText("Đánh giá: " + item.getRating() + "/5");
+
+        // === BIẾN FINAL CHO LAMBDA ===
+        final FoodItem finalItem = item;
+        final Integer salePrice = item.getSalePrice();
+        final int price = item.getPrice();
+
+        // === XỬ LÝ COMBO ===
+        if (item.isCombo() && item.getComboData() != null) {
+            ComboItem combo = item.getComboData();
+
+            tvFoodName.setText("COMBO " + combo.getName());
+            tvDetailedDescription.setText(combo.getDescription());
+            tvFoodPrice.setText(combo.getComboPrice() + " VNĐ");
+            tvFoodSalePrice.setText("Giá gốc: " + combo.getOriginalPrice() + " VNĐ");
+            tvFoodSalePrice.setPaintFlags(tvFoodSalePrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            tvSelectedPrice.setVisibility(View.GONE);
+            spSize.setVisibility(View.GONE);
+
+            btnAddToCart.setOnClickListener(v -> {
+                addComboToCart(combo);
+                dialog.dismiss();
+            });
+
         } else {
-            tvSalePrice.setVisibility(View.GONE);
-        }
-        tvRating.setText("Đánh giá: " + item.getRating() + "/5");
+            // === MÓN ĂN THƯỜNG ===
+            tvFoodName.setText(finalItem.getName());
+            tvDetailedDescription.setText(finalItem.getDetailedDescription());
 
-        Log.d(TAG, "FoodItem ImageUrl: " + item.getImageUrl());
-        if (!item.getImageUrl().isEmpty()) {
-            Glide.with(this)
-                    .load(item.getImageUrl())
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .placeholder(android.R.drawable.ic_menu_gallery)
-                    .error(android.R.drawable.ic_menu_report_image)
-                    .into(ivImage);
-        }
-
-        ArrayAdapter<CharSequence> sizeAdapter = ArrayAdapter.createFromResource(this,
-                R.array.food_sizes, android.R.layout.simple_spinner_item);
-        sizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spSize.setAdapter(sizeAdapter);
-        spSize.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedSize = parent.getItemAtPosition(position).toString();
-                Long price = item.getSizePrices().get(selectedSize);
-                int finalPrice = (price != null) ? price.intValue() : item.getPrice();
-                tvSelectedPrice.setText("Giá đã chọn (" + selectedSize + "): " + finalPrice + " VNĐ");
+            // Giá gốc + giảm
+            if (salePrice != null && salePrice < price) {
+                tvFoodPrice.setText(salePrice + " VNĐ");
+                tvFoodSalePrice.setText("Giá gốc: " + price + " VNĐ");
+                tvFoodSalePrice.setPaintFlags(tvFoodSalePrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            } else {
+                tvFoodPrice.setText(price + " VNĐ");
+                tvFoodSalePrice.setVisibility(View.GONE);
             }
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                tvSelectedPrice.setText("Giá đã chọn (Small): " + item.getPrice() + " VNĐ");
+
+            // === SPINNER SIZE ===
+            Map<String, Long> sizePrices = finalItem.getSizePrices();
+            if (sizePrices == null || sizePrices.isEmpty()) {
+                sizePrices = new HashMap<>();
+                sizePrices.put("Small", (long) price);
             }
-        });
-        tvSelectedPrice.setText("Giá đã chọn (Small): " + item.getPrice() + " VNĐ");
 
-        // Show review input for logged-in non-admin users
-        if (mAuth.getCurrentUser() != null && !"admin".equals(role)) {
-            etReview.setVisibility(View.VISIBLE);
-            btnSubmitReview.setVisibility(View.VISIBLE);
-            rbReviewRating.setVisibility(View.VISIBLE);
-        } else {
-            etReview.setVisibility(View.GONE);
-            btnSubmitReview.setVisibility(View.GONE);
-            rbReviewRating.setVisibility(View.GONE);
-        }
+            List<String> sizes = new ArrayList<>(sizePrices.keySet());
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sizes);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spSize.setAdapter(adapter);
 
-        // Render approved comments into llCommentSection
-        llCommentSection.removeAllViews();
-        List<Map<String, Object>> comments = item.getComments();
-        if (comments != null && !comments.isEmpty()) {
-            llCommentSection.setVisibility(View.VISIBLE);
-            for (Map<String, Object> c : comments) {
-                boolean approved = false;
-                if (c.get("approved") instanceof Boolean) approved = (Boolean) c.get("approved");
-                // show only approved comments to regular users; admins could see all but keep simple
-                if (approved) {
-                    String userId = c.get("userId") != null ? c.get("userId").toString() : "User";
-                    String commentText = c.get("comment") != null ? c.get("comment").toString() : "";
-                    String ratingStr = c.get("rating") != null ? String.valueOf(((Number) c.get("rating")).intValue()) : "0";
-                    TextView tv = new TextView(this);
-                    tv.setText("★" + ratingStr + " — " + commentText + "\n- " + userId);
-                    tv.setPadding(0, 8, 0, 8);
-                    llCommentSection.addView(tv);
-                } else {
-                    // if current user posted this comment and it's not approved yet, show pending
-                    if (mAuth.getCurrentUser() != null && mAuth.getCurrentUser().getUid().equals(String.valueOf(c.get("userId")))) {
-                        TextView tv = new TextView(this);
-                        tv.setText("(Đang chờ duyệt) " + (c.get("comment") != null ? c.get("comment").toString() : ""));
-                        tv.setPadding(0, 8, 0, 8);
-                        llCommentSection.addView(tv);
-                    }
+            final Map<String, Long> finalSizePrices = sizePrices;
+
+            spSize.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                    String size = sizes.get(pos);
+                    long selectedPrice = finalSizePrices.get(size);
+                    tvSelectedPrice.setText("Giá đã chọn: " + selectedPrice + " VNĐ");
                 }
-            }
-        } else {
-            llCommentSection.setVisibility(View.GONE);
+                @Override public void onNothingSelected(AdapterView<?> parent) {}
+            });
+
+            // === GHI CHÚ ===
+            final String[] note = {""};
+            etNote.addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                @Override public void afterTextChanged(Editable s) { note[0] = s.toString(); }
+            });
+
+            // === THÊM VÀO GIỎ ===
+            btnAddToCart.setOnClickListener(v -> {
+                String size = (String) spSize.getSelectedItem();
+                if (size == null) {
+                    Toast.makeText(this, "Vui lòng chọn kích cỡ", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                long selectedPrice = finalSizePrices.get(size);
+
+                Map<String, Object> cartItem = new HashMap<>();
+                cartItem.put("foodId", finalItem.getDocumentId());
+                cartItem.put("name", finalItem.getName());
+                cartItem.put("price", selectedPrice);
+                cartItem.put("size", size);
+                cartItem.put("imageUrl", finalItem.getImageUrl());
+                if (!note[0].isEmpty()) cartItem.put("note", note[0]);
+
+                db.collection("users").document(mAuth.getCurrentUser().getUid())
+                        .update("cart", FieldValue.arrayUnion(cartItem))
+                        .addOnSuccessListener(a -> {
+                            Toast.makeText(this, "Đã thêm: " + finalItem.getName() + " (" + size + ")", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                        })
+                        .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            });
         }
 
-        if (!"admin".equals(role)) {
-            btnDeleteFood.setVisibility(View.GONE);
-            btnEditFood.setVisibility(View.GONE);
-        } else {
-            btnDeleteFood.setVisibility(View.VISIBLE);
+        // === ADMIN: SỬA / XÓA ===
+        if ("admin".equals(role)) {
             btnEditFood.setVisibility(View.VISIBLE);
+            btnDeleteFood.setVisibility(View.VISIBLE);
+
+            btnEditFood.setOnClickListener(v -> {
+                dialog.dismiss();
+                showEditFoodDialog(finalItem);
+            });
+
+            btnDeleteFood.setOnClickListener(v -> {
+                new AlertDialog.Builder(this)
+                        .setTitle("Xóa món")
+                        .setMessage("Xóa " + finalItem.getName() + "?")
+                        .setPositiveButton("Xóa", (d, w) -> {
+                            db.collection("NewFoodDB").document(finalItem.getDocumentId())
+                                    .delete()
+                                    .addOnSuccessListener(a -> {
+                                        Toast.makeText(this, "Đã xóa", Toast.LENGTH_SHORT).show();
+                                        dialog.dismiss();
+                                        loadFoodList();
+                                    });
+                        })
+                        .setNegativeButton("Hủy", null)
+                        .show();
+            });
+        } else {
+            btnEditFood.setVisibility(View.GONE);
+            btnDeleteFood.setVisibility(View.GONE);
         }
 
-        // Submit review handler
-        btnSubmitReview.setOnClickListener(v -> {
-            if (mAuth.getCurrentUser() == null) {
-                Toast.makeText(this, "Vui lòng đăng nhập để đánh giá", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            String reviewText = etReview.getText().toString().trim();
-            int reviewRating = (int) rbReviewRating.getRating();
-            if (reviewText.isEmpty() || reviewRating <= 0) {
-                Toast.makeText(this, "Vui lòng nhập nội dung đánh giá và chọn số sao", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            Map<String, Object> commentMap = new HashMap<>();
-            commentMap.put("userId", mAuth.getCurrentUser().getUid());
-            commentMap.put("comment", reviewText);
-            commentMap.put("approved", false); // admin will approve
-            commentMap.put("rating", reviewRating);
-            commentMap.put("timestamp", FieldValue.serverTimestamp());
-
-            db.collection("NewFoodDB").document(item.getDocumentId())
-                    .update("comments", FieldValue.arrayUnion(commentMap))
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Đã gửi đánh giá. Vui lòng chờ duyệt.", Toast.LENGTH_SHORT).show();
-                        // show pending locally
-                        TextView tv = new TextView(this);
-                        tv.setText("(Đang chờ duyệt) " + reviewText);
-                        tv.setPadding(0, 8, 0, 8);
-                        llCommentSection.setVisibility(View.VISIBLE);
-                        llCommentSection.addView(tv, 0);
-                        etReview.setText("");
-                        rbReviewRating.setRating(0);
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Lỗi khi gửi đánh giá: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-        });
-
-        // THÊM VÀO GIỎ + GHI CHÚ
-        btnAddToCart.setOnClickListener(v -> {
-            if (item.isCombo()) {
-                addComboToCart(item.getComboData());
-            }
-            else {
-                String selectedSize = spSize.getSelectedItem().toString();
-                Long price = item.getSizePrices().get(selectedSize);
-                int finalPrice = (price != null) ? price.intValue() : item.getPrice();
-                String note = etNote.getText().toString().trim(); // LẤY GHI CHÚ
-
-                CartItem cartItem = new CartItem(
-                        item.getName() + " (" + selectedSize + ")",
-                        finalPrice,
-                        1,
-                        item.getImageUrl(),
-                        note // TRUYỀN GHI CHÚ
-                );
-                Log.d(TAG, "Adding to cart: " + cartItem.getName() + ", Note: " + note);
-                addItemToCart(cartItem);
-                Toast.makeText(this, "Đã thêm vào giỏ!", Toast.LENGTH_SHORT).show();
-            }
-            dialog.dismiss();
-        });
-        if (item.isCombo()) {
-            tvDetailedDescription.setText("Gồm: " + item.getComboData().getDescription() + "\nTiết kiệm: " + (item.getSalePrice() - item.getPrice()) + " VNĐ");
-            tvSalePrice.setVisibility(View.VISIBLE);  // Hiển thị giá gốc bị gạch
-        }
-        btnDeleteFood.setOnClickListener(v -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Xác nhận xóa")
-                    .setMessage("Bạn có chắc muốn xóa món " + item.getName() + "?")
-                    .setPositiveButton("Xóa", (dialogInner, which) -> {
-                        db.collection("NewFoodDB").document(item.getDocumentId())
-                                .delete()
-                                .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(this, "Đã xóa món ăn: " + item.getName(), Toast.LENGTH_SHORT).show();
-                                    dialog.dismiss();
-                                    loadFoodList();
-                                })
-                                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                    })
-                    .setNegativeButton("Hủy", null)
-                    .show();
-        });
-
-        btnEditFood.setOnClickListener(v -> showEditFoodDialog(item));
+        // === NÚT ĐÓNG ===
         btnClose.setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
     }
-
-    private void addItemToCart(CartItem newItem) {
-        if (mAuth.getCurrentUser() == null) {
-            Toast.makeText(this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        DocumentReference userDoc = db.collection("users").document(mAuth.getCurrentUser().getUid());
-        Map<String, Object> itemData = new HashMap<>();
-        itemData.put("name", newItem.getName());
-        itemData.put("price", newItem.getPrice());
-        itemData.put("quantity", newItem.getQuantity());
-        itemData.put("imageUrl", newItem.getImageUrl());
-        itemData.put("note", newItem.getNote()); // LƯU GHI CHÚ
-
-        Log.d(TAG, "Saving cart item: " + newItem.getName() + ", Note: " + newItem.getNote());
-
-        userDoc.update("cart", FieldValue.arrayUnion(itemData))
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Cart item saved with note: " + newItem.getNote());
-                    Toast.makeText(this, "Đã thêm vào giỏ!", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Lỗi add item: " + e.getMessage());
-                    Toast.makeText(this, "Lỗi thêm vào giỏ", Toast.LENGTH_SHORT).show();
-                });
-    }
-
     private void showAddFoodDialog() {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_add_food);
@@ -462,6 +322,7 @@ public class MenuActivity extends BaseActivity {
             window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         }
 
+        ImageView ivFoodImageAdd = dialog.findViewById(R.id.ivFoodImageAdd);
         EditText etFoodName = dialog.findViewById(R.id.etFoodName);
         EditText etFoodDescription = dialog.findViewById(R.id.etFoodDescription);
         EditText etDetailedDescription = dialog.findViewById(R.id.etDetailedDescription);
@@ -470,23 +331,35 @@ public class MenuActivity extends BaseActivity {
         EditText etLargePrice = dialog.findViewById(R.id.etLargePrice);
         EditText etFoodSalePrice = dialog.findViewById(R.id.etFoodSalePrice);
         EditText etFoodImageUrl = dialog.findViewById(R.id.etFoodImageUrl);
-        ImageView ivFoodImageAdd = dialog.findViewById(R.id.ivFoodImageAdd);
         EditText etFoodRating = dialog.findViewById(R.id.etFoodRating);
+        Spinner spFoodTag = dialog.findViewById(R.id.spFoodTag);
         Button btnSaveFood = dialog.findViewById(R.id.btnSaveFood);
         Button btnCancel = dialog.findViewById(R.id.btnCancel);
-        Spinner spFoodTag = dialog.findViewById(R.id.spFoodTag);
-        // Preview ảnh khi nhập URL
+
+        if (etFoodName == null || etFoodDescription == null || etFoodPrice == null || etFoodRating == null || btnSaveFood == null || btnCancel == null) {
+            Toast.makeText(this, "Lỗi: Không tìm thấy view", Toast.LENGTH_LONG).show();
+            dialog.dismiss();
+            return;
+        }
+
+        // Xem trước ảnh khi nhập URL
         etFoodImageUrl.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-            @Override public void afterTextChanged(Editable s) {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
                 String url = s.toString().trim();
                 if (!url.isEmpty()) {
                     Glide.with(MenuActivity.this)
                             .load(url)
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .placeholder(android.R.drawable.ic_menu_gallery)
                             .error(android.R.drawable.ic_menu_report_image)
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
+                            .skipMemoryCache(true)
                             .into(ivFoodImageAdd);
                 } else {
                     ivFoodImageAdd.setImageResource(android.R.drawable.ic_menu_gallery);
@@ -494,20 +367,20 @@ public class MenuActivity extends BaseActivity {
             }
         });
 
-
         btnSaveFood.setOnClickListener(v -> {
             String name = etFoodName.getText().toString().trim();
             String description = etFoodDescription.getText().toString().trim();
             String detailedDescription = etDetailedDescription.getText().toString().trim();
             String priceStr = etFoodPrice.getText().toString().trim();
+            String mediumPriceStr = etMediumPrice.getText().toString().trim();
+            String largePriceStr = etLargePrice.getText().toString().trim();
             String salePriceStr = etFoodSalePrice.getText().toString().trim();
             String imageUrl = etFoodImageUrl.getText().toString().trim();
             String ratingStr = etFoodRating.getText().toString().trim();
-            String mediumPriceStr = etMediumPrice.getText().toString().trim();
-            String largePriceStr = etLargePrice.getText().toString().trim();
             String tag = spFoodTag.getSelectedItem().toString();
+
             if (name.isEmpty() || priceStr.isEmpty() || ratingStr.isEmpty()) {
-                Toast.makeText(this, "Vui lòng điền đầy đủ Tên, Giá và Đánh giá", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -540,18 +413,17 @@ public class MenuActivity extends BaseActivity {
             Map<String, Object> foodData = new HashMap<>();
             foodData.put("name", name);
             foodData.put("description", description.isEmpty() ? "Không có mô tả" : description);
+            foodData.put("detailedDescription", detailedDescription.isEmpty() ? "Chưa có mô tả chi tiết" : detailedDescription);
+            foodData.put("tag", tag);
             foodData.put("price", price);
             foodData.put("salePrice", salePrice != null ? salePrice.intValue() : null);
             foodData.put("imageUrl", imageUrl.isEmpty() ? "" : imageUrl);
             foodData.put("rating", rating);
-            foodData.put("detailedDescription", detailedDescription.isEmpty() ? "Chưa có mô tả chi tiết" : detailedDescription);
             foodData.put("sizePrices", sizePrices);
-            foodData.put("comments", new ArrayList<>()); // Giữ lại nếu cần sau
-            foodData.put("tag", tag);
-            db.collection("NewFoodDB")
-                    .add(foodData)
+            foodData.put("comments", new ArrayList<>()); // Danh sách bình luận rỗng
+
+            db.collection("NewFoodDB").add(foodData)
                     .addOnSuccessListener(documentReference -> {
-                        Log.d(TAG, "Added food: " + name);
                         Toast.makeText(this, "Đã thêm món ăn: " + name, Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
                         loadFoodList();
@@ -574,6 +446,7 @@ public class MenuActivity extends BaseActivity {
             window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         }
 
+        ImageView ivFoodImageAdd = dialog.findViewById(R.id.ivFoodImageAdd);
         EditText etFoodName = dialog.findViewById(R.id.etFoodName);
         EditText etFoodDescription = dialog.findViewById(R.id.etFoodDescription);
         EditText etDetailedDescription = dialog.findViewById(R.id.etDetailedDescription);
@@ -582,71 +455,76 @@ public class MenuActivity extends BaseActivity {
         EditText etLargePrice = dialog.findViewById(R.id.etLargePrice);
         EditText etFoodSalePrice = dialog.findViewById(R.id.etFoodSalePrice);
         EditText etFoodImageUrl = dialog.findViewById(R.id.etFoodImageUrl);
-    ImageView ivFoodImageAdd = dialog.findViewById(R.id.ivFoodImageAdd);
         EditText etFoodRating = dialog.findViewById(R.id.etFoodRating);
+        Spinner spFoodTag = dialog.findViewById(R.id.spFoodTag);
         Button btnSaveFood = dialog.findViewById(R.id.btnSaveFood);
         Button btnCancel = dialog.findViewById(R.id.btnCancel);
-        Spinner spFoodTag = dialog.findViewById(R.id.spFoodTag);
 
+        // Set giá trị hiện tại
         etFoodName.setText(item.getName());
         etFoodDescription.setText(item.getDescription());
+        etDetailedDescription.setText(item.getDetailedDescription());
         etFoodPrice.setText(String.valueOf(item.getPrice()));
         etFoodSalePrice.setText(item.getSalePrice() != null ? String.valueOf(item.getSalePrice()) : "");
         etFoodImageUrl.setText(item.getImageUrl());
-        // Load preview ảnh hiện tại
-        if (item.getImageUrl() != null && !item.getImageUrl().isEmpty()) {
-            Glide.with(this)
-                    .load(item.getImageUrl())
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .placeholder(android.R.drawable.ic_menu_gallery)
-                    .error(android.R.drawable.ic_menu_report_image)
-                    .into(ivFoodImageAdd);
-        }
+        etFoodRating.setText(String.valueOf(item.getRating()));
 
-        // Cập nhật preview khi sửa URL
+        // Set giá kích cỡ
+        etMediumPrice.setText(item.getSizePrices().get("Medium") != null ? String.valueOf(item.getSizePrices().get("Medium")) : "");
+        etLargePrice.setText(item.getSizePrices().get("Large") != null ? String.valueOf(item.getSizePrices().get("Large")) : "");
+
+        // Set tag
+        int tagPosition = 0;
+        if ("nước".equals(item.getTag())) tagPosition = 1;
+        spFoodTag.setSelection(tagPosition);
+
+        // Xem trước ảnh
+        Glide.with(this)
+                .load(item.getImageUrl())
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .error(android.R.drawable.ic_menu_report_image)
+                .into(ivFoodImageAdd);
+
+        // Xem trước ảnh khi nhập URL
         etFoodImageUrl.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-            @Override public void afterTextChanged(Editable s) {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
                 String url = s.toString().trim();
                 if (!url.isEmpty()) {
                     Glide.with(MenuActivity.this)
                             .load(url)
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .placeholder(android.R.drawable.ic_menu_gallery)
                             .error(android.R.drawable.ic_menu_report_image)
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
+                            .skipMemoryCache(true)
                             .into(ivFoodImageAdd);
                 } else {
                     ivFoodImageAdd.setImageResource(android.R.drawable.ic_menu_gallery);
                 }
             }
         });
-        int tagPosition = 0; // Default "thức ăn"
-        if ("nước".equals(item.getTag())) {
-            tagPosition = 1;
-        }
-        spFoodTag.setSelection(tagPosition);
-        etFoodRating.setText(String.valueOf(item.getRating()));
-        etDetailedDescription.setText(item.getDetailedDescription());
-        etMediumPrice.setText(item.getSizePrices().get("Medium") != null ? String.valueOf(item.getSizePrices().get("Medium")) : "");
-        etLargePrice.setText(item.getSizePrices().get("Large") != null ? String.valueOf(item.getSizePrices().get("Large")) : "");
 
         btnSaveFood.setText("Cập nhật");
-
         btnSaveFood.setOnClickListener(v -> {
             String name = etFoodName.getText().toString().trim();
             String description = etFoodDescription.getText().toString().trim();
             String detailedDescription = etDetailedDescription.getText().toString().trim();
-            String tag = spFoodTag.getSelectedItem().toString();
             String priceStr = etFoodPrice.getText().toString().trim();
+            String mediumPriceStr = etMediumPrice.getText().toString().trim();
+            String largePriceStr = etLargePrice.getText().toString().trim();
             String salePriceStr = etFoodSalePrice.getText().toString().trim();
             String imageUrl = etFoodImageUrl.getText().toString().trim();
             String ratingStr = etFoodRating.getText().toString().trim();
-            String mediumPriceStr = etMediumPrice.getText().toString().trim();
-            String largePriceStr = etLargePrice.getText().toString().trim();
+            String tag = spFoodTag.getSelectedItem().toString();
 
             if (name.isEmpty() || priceStr.isEmpty() || ratingStr.isEmpty()) {
-                Toast.makeText(this, "Vui lòng điền đầy đủ Tên, Giá và Đánh giá", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -679,7 +557,6 @@ public class MenuActivity extends BaseActivity {
             Map<String, Object> foodData = new HashMap<>();
             foodData.put("name", name);
             foodData.put("description", description.isEmpty() ? "Không có mô tả" : description);
-            foodData.put("tag", tag);
             foodData.put("price", price);
             foodData.put("salePrice", salePrice != null ? salePrice.intValue() : null);
             foodData.put("imageUrl", imageUrl.isEmpty() ? "" : imageUrl);
@@ -704,6 +581,82 @@ public class MenuActivity extends BaseActivity {
         btnCancel.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
+    private void generateSmartCombos() {
+        comboSectionList.clear();  // Xóa combo cũ
+
+        List<FoodItem> foods = foodList.stream()
+                .filter(item -> "thức ăn".equals(item.getTag()))
+                .collect(Collectors.toList());
+        List<FoodItem> drinks = foodList.stream()
+                .filter(item -> "nước".equals(item.getTag()))
+                .collect(Collectors.toList());
+
+        // === COMBO 1+1 ===
+        if (!foods.isEmpty() && !drinks.isEmpty()) {
+            FoodItem f = foods.get(0);
+            FoodItem d = drinks.get(0);
+            int original = f.getPrice() + d.getPrice();
+            int comboPrice = (int) (original * 0.9);
+
+            ComboItem combo = new ComboItem(
+                    "combo_1_1",
+                    f.getName() + " + " + d.getName(),
+                    "Tiết kiệm 10%",
+                    comboPrice, original, f.getImageUrl(),
+                    List.of(f.getDocumentId(), d.getDocumentId()),
+                    Map.of(f.getDocumentId(), 1, d.getDocumentId(), 1)
+            );
+            comboSectionList.add(new FoodItem(combo));
+        }
+
+        // === COMBO 2+3 ===
+        if (foods.size() >= 2 && drinks.size() >= 3) {
+            List<FoodItem> fc = foods.subList(0, 2);
+            List<FoodItem> dc = drinks.subList(0, 3);
+            int original = fc.stream().mapToInt(FoodItem::getPrice).sum() + dc.stream().mapToInt(FoodItem::getPrice).sum();
+            int comboPrice = (int) (original * 0.85);
+
+            String name = fc.get(0).getName() + " + " + fc.get(1).getName() + " + 3 nước";
+            ComboItem combo = new ComboItem("combo_2_3", name, "Tiết kiệm 15%", comboPrice, original, fc.get(0).getImageUrl(),
+                    java.util.stream.Stream.concat(fc.stream(), dc.stream()).map(FoodItem::getDocumentId).collect(Collectors.toList()),
+                    java.util.stream.Stream.concat(fc.stream(), dc.stream()).collect(Collectors.toMap(FoodItem::getDocumentId, i -> 1))
+            );
+            comboSectionList.add(new FoodItem(combo));
+        }
+
+        // === COMBO 4+6 ===
+        if (foods.size() >= 4 && drinks.size() >= 6) {
+            List<FoodItem> fc = foods.subList(0, 4);
+            List<FoodItem> dc = drinks.subList(0, 6);
+            int original = fc.stream().mapToInt(FoodItem::getPrice).sum() + dc.stream().mapToInt(FoodItem::getPrice).sum();
+            int comboPrice = (int) (original * 0.8);
+
+            ComboItem combo = new ComboItem("combo_4_6", "Combo Gia Đình", "Tiết kiệm 20%", comboPrice, original, fc.get(0).getImageUrl(),
+                    java.util.stream.Stream.concat(fc.stream(), dc.stream()).map(FoodItem::getDocumentId).collect(Collectors.toList()),
+                    java.util.stream.Stream.concat(fc.stream(), dc.stream()).collect(Collectors.toMap(FoodItem::getDocumentId, i -> 1))
+            );
+            comboSectionList.add(new FoodItem(combo));
+        }
+    }
+    private void updateMenuWithSections() {
+        filteredFoodList.clear();
+
+        // === THÊM SECTION COMBO ===
+        if (!comboSectionList.isEmpty()) {
+            // Tạo header COMBO (dùng documentId để phân biệt)
+            FoodItem comboHeader = new FoodItem("header_combo", "COMBO HOT", "", 0, "", 0, null);
+            comboHeader.setIsCombo(true);  // Đánh dấu là header
+            filteredFoodList.add(comboHeader);
+            filteredFoodList.addAll(comboSectionList);
+        }
+
+        // === THÊM SECTION MÓN ĂN ===
+        FoodItem foodHeader = new FoodItem("header_food", "TẤT CẢ MÓN ĂN", "", 0, "", 0, null);
+        foodHeader.setIsCombo(true);
+        filteredFoodList.add(foodHeader);
+        filteredFoodList.addAll(regularFoodList);
+    }
+
     private void addComboToCart(ComboItem combo) {
         Map<String, Object> cartItem = new HashMap<>();
         cartItem.put("isCombo", true);
@@ -722,8 +675,12 @@ public class MenuActivity extends BaseActivity {
         db.collection("NewFoodDB")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    // 1. XÓA DỮ LIỆU CŨ
                     foodList.clear();
-                    filteredFoodList.clear();
+                    comboSectionList.clear();
+                    regularFoodList.clear();
+
+                    // 2. ĐỌC TỪ FIRESTORE → CHỈ LÀ MÓN THƯỜNG
                     for (DocumentSnapshot doc : queryDocumentSnapshots) {
                         try {
                             String name = doc.getString("name");
@@ -749,37 +706,36 @@ public class MenuActivity extends BaseActivity {
                                         rating != null ? rating.intValue() : 0,
                                         salePrice != null ? salePrice.intValue() : null
                                 );
-                                item.setTag(tag != null ? tag : "thức ăn"); // Default nếu chưa có
+                                item.setTag(tag != null ? tag : "thức ăn");
                                 item.setDetailedDescription(detailedDescription != null ? detailedDescription : "");
                                 item.setSizePrices(sizePrices != null ? sizePrices : new HashMap<>());
                                 item.setComments(comments != null ? comments : new ArrayList<>());
+
+                                // CHỈ THÊM VÀO foodList & regularFoodList
                                 foodList.add(item);
-                                filteredFoodList.add(item);
+                                regularFoodList.add(item);
                             }
                         } catch (Exception e) {
                             Log.e(TAG, "Error parsing document: " + e.getMessage(), e);
                         }
                     }
+
+                    // 3. SINH COMBO TỪ DỮ LIỆU THỰC
+                    generateSmartCombos();  // ← Tạo combo → thêm vào comboSectionList
+
+                    // 4. TẠO SECTION: COMBO + MÓN ĂN
+                    updateMenuWithSections();
+
+                    // 5. CẬP NHẬT ADAPTER
                     adapter.notifyDataSetChanged();
+
                     if (filteredFoodList.isEmpty()) {
-                        Toast.makeText(this, "Không có món ăn nào để hiển thị", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Không có món ăn nào", Toast.LENGTH_SHORT).show();
                     }
-                    // ... code cũ (parse foodList và filteredFoodList)
-
-                    generateSmartCombos();  // Tạo combo từ dữ liệu
-
-                    // Gộp combo vào filteredFoodList (hiển thị cuối menu)
-                    for (ComboItem c : comboList) {
-                        FoodItem comboAsFood = new FoodItem(c);
-                        filteredFoodList.add(comboAsFood);
-                    }
-
-                    adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error getting food items: " + e.getMessage(), e);
                     Toast.makeText(this, "Lỗi khi tải dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
-
     }
 }
