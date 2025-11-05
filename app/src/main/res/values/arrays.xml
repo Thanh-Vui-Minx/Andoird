@@ -5,4 +5,8 @@
         <item>Medium</item>
         <item>Large</item>
     </string-array>
+    <string-array name="food_tags">
+        <item>thức ăn</item>
+        <item>nước</item>
+    </string-array>
 </resources>

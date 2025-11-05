@@ -1,5 +1,6 @@
 package com.example.peterfood;
 
+import java.util.stream.Collectors;  // Để dùng stream (nếu Java 8+)
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
@@ -35,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MenuActivity extends BaseActivity {
-
+    private List<ComboItem> comboList = new ArrayList<>();
     private static final String TAG = "MenuActivity";
     private RecyclerView rvMenu;
     private MenuAdapter adapter;
@@ -45,6 +46,8 @@ public class MenuActivity extends BaseActivity {
     private FirebaseAuth mAuth;
     private String role;
     private EditText etSearch;
+    private List<FoodItem> comboSectionList = new ArrayList<>();  // Combo riêng
+    private List<FoodItem> regularFoodList = new ArrayList<>();   // Món thường
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +118,90 @@ public class MenuActivity extends BaseActivity {
 
         btnGoToCart.setOnClickListener(v -> startActivity(new Intent(MenuActivity.this, CartActivity.class)));
         btnAddFood.setOnClickListener(v -> showAddFoodDialog());
+    }
+    private void generateSmartCombos() {
+        List<FoodItem> foods = foodList.stream()
+                .filter(item -> "thức ăn".equals(item.getTag()))
+                .collect(Collectors.toList());
+        List<FoodItem> drinks = foodList.stream()
+                .filter(item -> "nước".equals(item.getTag()))
+                .collect(Collectors.toList());
+
+        comboList.clear();
+
+        // Combo 1: 1 ăn + 1 nước → giảm 10%
+        if (!foods.isEmpty() && !drinks.isEmpty()) {
+            FoodItem food = foods.get(0);  // Lấy món đầu tiên (có thể randomize sau)
+            FoodItem drink = drinks.get(0);
+            int original = food.getPrice() + drink.getPrice();
+            int comboPrice = (int) (original * 0.9);
+            ComboItem combo = new ComboItem(
+                    "combo_1_1",
+                    food.getName() + " + " + drink.getName(),
+                    "Combo đôi - Tiết kiệm 10%",
+                    comboPrice,
+                    original,
+                    food.getImageUrl(),  // Ảnh từ món ăn chính
+                    List.of(food.getDocumentId(), drink.getDocumentId()),
+                    Map.of(food.getDocumentId(), 1, drink.getDocumentId(), 1)
+            );
+            comboList.add(combo);
+        }
+
+        // Combo 2: 2 ăn + 3 nước → giảm 15%
+        if (foods.size() >= 2 && drinks.size() >= 3) {
+            List<FoodItem> foodCombo = foods.subList(0, 2);
+            List<FoodItem> drinkCombo = drinks.subList(0, 3);
+            int original = foodCombo.stream().mapToInt(FoodItem::getPrice).sum() +
+                    drinkCombo.stream().mapToInt(FoodItem::getPrice).sum();
+            int comboPrice = (int) (original * 0.85);
+            String name = String.join(" + ", foodCombo.stream().map(FoodItem::getName).collect(Collectors.toList())) +
+                    " + " + String.join(" + ", drinkCombo.stream().map(FoodItem::getName).collect(Collectors.toList()));
+            if (name.length() > 50) name = name.substring(0, 47) + "...";
+            ComboItem combo = new ComboItem(
+                    "combo_2_3",
+                    name,
+                    "Combo lớn - Tiết kiệm 15%",
+                    comboPrice,
+                    original,
+                    foodCombo.get(0).getImageUrl(),
+                    java.util.stream.Stream.concat(
+                            foodCombo.stream().map(FoodItem::getDocumentId),
+                            drinkCombo.stream().map(FoodItem::getDocumentId)
+                    ).collect(Collectors.toList()),
+                    java.util.stream.Stream.concat(
+                            foodCombo.stream().map(f -> java.util.Map.entry(f.getDocumentId(), 1)),
+                            drinkCombo.stream().map(d -> java.util.Map.entry(d.getDocumentId(), 1))
+                    ).collect(Collectors.toMap(java.util.Map.Entry::getKey, java.util.Map.Entry::getValue))
+            );
+            comboList.add(combo);
+        }
+
+        // Combo 3: 4 ăn + 6 nước → giảm 20%
+        if (foods.size() >= 4 && drinks.size() >= 6) {
+            List<FoodItem> foodCombo = foods.subList(0, 4);
+            List<FoodItem> drinkCombo = drinks.subList(0, 6);
+            int original = foodCombo.stream().mapToInt(FoodItem::getPrice).sum() +
+                    drinkCombo.stream().mapToInt(FoodItem::getPrice).sum();
+            int comboPrice = (int) (original * 0.8);
+            ComboItem combo = new ComboItem(
+                    "combo_4_6",
+                    "Combo Gia Đình Siêu Tiết Kiệm",
+                    "4 ăn + 6 nước - Tiết kiệm 20%",
+                    comboPrice,
+                    original,
+                    foodCombo.get(0).getImageUrl(),
+                    java.util.stream.Stream.concat(
+                            foodCombo.stream().map(FoodItem::getDocumentId),
+                            drinkCombo.stream().map(FoodItem::getDocumentId)
+                    ).collect(Collectors.toList()),
+                    java.util.stream.Stream.concat(
+                            foodCombo.stream().map(f -> java.util.Map.entry(f.getDocumentId(), 1)),
+                            drinkCombo.stream().map(d -> java.util.Map.entry(d.getDocumentId(), 1))
+                    ).collect(Collectors.toMap(java.util.Map.Entry::getKey, java.util.Map.Entry::getValue))
+            );
+            comboList.add(combo);
+        }
     }
 
     private void filterFoodList(String query) {
@@ -290,24 +377,32 @@ public class MenuActivity extends BaseActivity {
 
         // THÊM VÀO GIỎ + GHI CHÚ
         btnAddToCart.setOnClickListener(v -> {
-            String selectedSize = spSize.getSelectedItem().toString();
-            Long price = item.getSizePrices().get(selectedSize);
-            int finalPrice = (price != null) ? price.intValue() : item.getPrice();
-            String note = etNote.getText().toString().trim(); // LẤY GHI CHÚ
+            if (item.isCombo()) {
+                addComboToCart(item.getComboData());
+            }
+            else {
+                String selectedSize = spSize.getSelectedItem().toString();
+                Long price = item.getSizePrices().get(selectedSize);
+                int finalPrice = (price != null) ? price.intValue() : item.getPrice();
+                String note = etNote.getText().toString().trim(); // LẤY GHI CHÚ
 
-            CartItem cartItem = new CartItem(
-                    item.getName() + " (" + selectedSize + ")",
-                    finalPrice,
-                    1,
-                    item.getImageUrl(),
-                    note // TRUYỀN GHI CHÚ
-            );
-            Log.d(TAG, "Adding to cart: " + cartItem.getName() + ", Note: " + note);
-            addItemToCart(cartItem);
-            Toast.makeText(this, "Đã thêm vào giỏ!", Toast.LENGTH_SHORT).show();
+                CartItem cartItem = new CartItem(
+                        item.getName() + " (" + selectedSize + ")",
+                        finalPrice,
+                        1,
+                        item.getImageUrl(),
+                        note // TRUYỀN GHI CHÚ
+                );
+                Log.d(TAG, "Adding to cart: " + cartItem.getName() + ", Note: " + note);
+                addItemToCart(cartItem);
+                Toast.makeText(this, "Đã thêm vào giỏ!", Toast.LENGTH_SHORT).show();
+            }
             dialog.dismiss();
         });
-
+        if (item.isCombo()) {
+            tvDetailedDescription.setText("Gồm: " + item.getComboData().getDescription() + "\nTiết kiệm: " + (item.getSalePrice() - item.getPrice()) + " VNĐ");
+            tvSalePrice.setVisibility(View.VISIBLE);  // Hiển thị giá gốc bị gạch
+        }
         btnDeleteFood.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Xác nhận xóa")
@@ -379,7 +474,7 @@ public class MenuActivity extends BaseActivity {
         EditText etFoodRating = dialog.findViewById(R.id.etFoodRating);
         Button btnSaveFood = dialog.findViewById(R.id.btnSaveFood);
         Button btnCancel = dialog.findViewById(R.id.btnCancel);
-
+        Spinner spFoodTag = dialog.findViewById(R.id.spFoodTag);
         // Preview ảnh khi nhập URL
         etFoodImageUrl.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -399,6 +494,7 @@ public class MenuActivity extends BaseActivity {
             }
         });
 
+
         btnSaveFood.setOnClickListener(v -> {
             String name = etFoodName.getText().toString().trim();
             String description = etFoodDescription.getText().toString().trim();
@@ -409,7 +505,7 @@ public class MenuActivity extends BaseActivity {
             String ratingStr = etFoodRating.getText().toString().trim();
             String mediumPriceStr = etMediumPrice.getText().toString().trim();
             String largePriceStr = etLargePrice.getText().toString().trim();
-
+            String tag = spFoodTag.getSelectedItem().toString();
             if (name.isEmpty() || priceStr.isEmpty() || ratingStr.isEmpty()) {
                 Toast.makeText(this, "Vui lòng điền đầy đủ Tên, Giá và Đánh giá", Toast.LENGTH_SHORT).show();
                 return;
@@ -451,7 +547,7 @@ public class MenuActivity extends BaseActivity {
             foodData.put("detailedDescription", detailedDescription.isEmpty() ? "Chưa có mô tả chi tiết" : detailedDescription);
             foodData.put("sizePrices", sizePrices);
             foodData.put("comments", new ArrayList<>()); // Giữ lại nếu cần sau
-
+            foodData.put("tag", tag);
             db.collection("NewFoodDB")
                     .add(foodData)
                     .addOnSuccessListener(documentReference -> {
@@ -490,6 +586,7 @@ public class MenuActivity extends BaseActivity {
         EditText etFoodRating = dialog.findViewById(R.id.etFoodRating);
         Button btnSaveFood = dialog.findViewById(R.id.btnSaveFood);
         Button btnCancel = dialog.findViewById(R.id.btnCancel);
+        Spinner spFoodTag = dialog.findViewById(R.id.spFoodTag);
 
         etFoodName.setText(item.getName());
         etFoodDescription.setText(item.getDescription());
@@ -524,6 +621,11 @@ public class MenuActivity extends BaseActivity {
                 }
             }
         });
+        int tagPosition = 0; // Default "thức ăn"
+        if ("nước".equals(item.getTag())) {
+            tagPosition = 1;
+        }
+        spFoodTag.setSelection(tagPosition);
         etFoodRating.setText(String.valueOf(item.getRating()));
         etDetailedDescription.setText(item.getDetailedDescription());
         etMediumPrice.setText(item.getSizePrices().get("Medium") != null ? String.valueOf(item.getSizePrices().get("Medium")) : "");
@@ -535,6 +637,7 @@ public class MenuActivity extends BaseActivity {
             String name = etFoodName.getText().toString().trim();
             String description = etFoodDescription.getText().toString().trim();
             String detailedDescription = etDetailedDescription.getText().toString().trim();
+            String tag = spFoodTag.getSelectedItem().toString();
             String priceStr = etFoodPrice.getText().toString().trim();
             String salePriceStr = etFoodSalePrice.getText().toString().trim();
             String imageUrl = etFoodImageUrl.getText().toString().trim();
@@ -576,6 +679,7 @@ public class MenuActivity extends BaseActivity {
             Map<String, Object> foodData = new HashMap<>();
             foodData.put("name", name);
             foodData.put("description", description.isEmpty() ? "Không có mô tả" : description);
+            foodData.put("tag", tag);
             foodData.put("price", price);
             foodData.put("salePrice", salePrice != null ? salePrice.intValue() : null);
             foodData.put("imageUrl", imageUrl.isEmpty() ? "" : imageUrl);
@@ -600,7 +704,20 @@ public class MenuActivity extends BaseActivity {
         btnCancel.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
+    private void addComboToCart(ComboItem combo) {
+        Map<String, Object> cartItem = new HashMap<>();
+        cartItem.put("isCombo", true);
+        cartItem.put("comboId", combo.getId());
+        cartItem.put("name", combo.getName());
+        cartItem.put("price", combo.getComboPrice());
+        cartItem.put("imageUrl", combo.getImageUrl());
+        cartItem.put("foodIds", combo.getFoodIds());
+        cartItem.put("quantities", combo.getQuantities());
 
+        db.collection("users").document(mAuth.getCurrentUser().getUid())
+                .update("cart", FieldValue.arrayUnion(cartItem))
+                .addOnSuccessListener(a -> Toast.makeText(this, "Đã thêm combo vào giỏ! Tiết kiệm " + (combo.getOriginalPrice() - combo.getComboPrice()) + " VNĐ", Toast.LENGTH_SHORT).show());
+    }
     private void loadFoodList() {
         db.collection("NewFoodDB")
                 .get()
@@ -611,6 +728,7 @@ public class MenuActivity extends BaseActivity {
                         try {
                             String name = doc.getString("name");
                             String description = doc.getString("description");
+                            String tag = doc.getString("tag");
                             Number price = (Number) doc.get("price");
                             Number salePrice = (Number) doc.get("salePrice");
                             String imageUrl = doc.getString("imageUrl");
@@ -631,6 +749,7 @@ public class MenuActivity extends BaseActivity {
                                         rating != null ? rating.intValue() : 0,
                                         salePrice != null ? salePrice.intValue() : null
                                 );
+                                item.setTag(tag != null ? tag : "thức ăn"); // Default nếu chưa có
                                 item.setDetailedDescription(detailedDescription != null ? detailedDescription : "");
                                 item.setSizePrices(sizePrices != null ? sizePrices : new HashMap<>());
                                 item.setComments(comments != null ? comments : new ArrayList<>());
@@ -645,10 +764,22 @@ public class MenuActivity extends BaseActivity {
                     if (filteredFoodList.isEmpty()) {
                         Toast.makeText(this, "Không có món ăn nào để hiển thị", Toast.LENGTH_SHORT).show();
                     }
+                    // ... code cũ (parse foodList và filteredFoodList)
+
+                    generateSmartCombos();  // Tạo combo từ dữ liệu
+
+                    // Gộp combo vào filteredFoodList (hiển thị cuối menu)
+                    for (ComboItem c : comboList) {
+                        FoodItem comboAsFood = new FoodItem(c);
+                        filteredFoodList.add(comboAsFood);
+                    }
+
+                    adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error getting food items: " + e.getMessage(), e);
                     Toast.makeText(this, "Lỗi khi tải dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+
     }
 }

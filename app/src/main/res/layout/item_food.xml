@@ -49,5 +49,29 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:textColor="@color/textSecondary" />
+        <!-- Badge Combo -->
+        <TextView
+            android:id="@+id/tvComboBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="COMBO"
+            android:textColor="@android:color/white"
+            android:textSize="10sp"
+            android:background="#FF5722"
+            android:padding="4dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:visibility="gone" />
+
+        <!-- Tiết kiệm -->
+        <TextView
+            android:id="@+id/tvSavings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tiết kiệm X VNĐ"
+            android:textColor="#4CAF50"
+            android:textStyle="bold"
+            android:layout_below="@id/tvPrice"
+            android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

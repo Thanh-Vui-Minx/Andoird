@@ -1,6 +1,7 @@
 package com.example.peterfood;
 
 import android.content.Context;
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,23 +37,64 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         FoodItem item = foodList.get(position);
-        holder.tvName.setText(item.getName());
-        holder.tvDescription.setText(item.getDescription());
-        if (item.getSalePrice() != null && item.getSalePrice() < item.getPrice()) {
-            holder.tvPrice.setText("Giá: " + item.getSalePrice() + " VNĐ (Gốc: " + item.getPrice() + " VNĐ)");
+
+        // === HIỂN THỊ TÊN ===
+        if (item.isCombo()) {
+            holder.tvName.setText("COMBO " + item.getName());
         } else {
-            holder.tvPrice.setText("Giá: " + item.getPrice() + " VNĐ");
+            holder.tvName.setText(item.getName());
         }
+
+        // === MÔ TẢ ===
+        holder.tvDescription.setText(item.getDescription());
+
+        // === GIÁ & KHUYẾN MÃI ===
+        if (item.isCombo()) {
+            int comboPrice = item.getPrice();           // Giá đã giảm
+            int originalPrice = item.getSalePrice();    // Giá gốc
+            int savings = originalPrice - comboPrice;
+
+            // Giá combo
+            holder.tvPrice.setText(comboPrice + " VNĐ");
+            // Gạch ngang giá gốc
+            holder.tvPrice.setPaintFlags(holder.tvPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+
+            // Tiết kiệm
+            holder.tvSavings.setText("Tiết kiệm " + savings + " VNĐ");
+            holder.tvSavings.setVisibility(View.VISIBLE);
+
+            // Badge COMBO
+            holder.tvComboBadge.setVisibility(View.VISIBLE);
+        } else {
+            // Món thường
+            if (item.getSalePrice() != null && item.getSalePrice() < item.getPrice()) {
+                holder.tvPrice.setText(item.getSalePrice() + " VNĐ");
+                holder.tvPrice.setPaintFlags(holder.tvPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                holder.tvSavings.setText("Giảm " + (item.getPrice() - item.getSalePrice()) + " VNĐ");
+                holder.tvSavings.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvPrice.setText(item.getPrice() + " VNĐ");
+                holder.tvPrice.setPaintFlags(0); // Xóa gạch
+                holder.tvSavings.setVisibility(View.GONE);
+            }
+            holder.tvComboBadge.setVisibility(View.GONE);
+        }
+
+        // === ĐÁNH GIÁ ===
         holder.tvRating.setText("Đánh giá: " + item.getRating() + "/5");
 
+        // === ẢNH ===
         if (!item.getImageUrl().isEmpty()) {
             Glide.with(context)
                     .load(item.getImageUrl())
                     .placeholder(android.R.drawable.ic_menu_gallery)
                     .error(android.R.drawable.ic_menu_report_image)
                     .into(holder.ivImage);
+        } else {
+            holder.ivImage.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 
+        // === CLICK ===
         holder.itemView.setOnClickListener(v -> listener.onItemClick(item));
     }
 
@@ -61,9 +103,11 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
         return foodList.size();
     }
 
+    // ==================== VIEWHOLDER ĐÃ CẬP NHẬT ====================
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivImage;
         TextView tvName, tvDescription, tvPrice, tvRating;
+        TextView tvComboBadge, tvSavings;  // MỚI: Badge + tiết kiệm
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -72,6 +116,10 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
             tvDescription = itemView.findViewById(R.id.tvFoodDescription);
             tvPrice = itemView.findViewById(R.id.tvFoodPrice);
             tvRating = itemView.findViewById(R.id.tvFoodRating);
+
+            // THÊM MỚI: Badge và tiết kiệm
+            tvComboBadge = itemView.findViewById(R.id.tvComboBadge);
+            tvSavings = itemView.findViewById(R.id.tvSavings);
         }
     }
 }

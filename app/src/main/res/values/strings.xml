@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Peterfood</string>
+    <string name="chon_loai_mon_an">Chọn loại món ăn</string>
 </resources>
