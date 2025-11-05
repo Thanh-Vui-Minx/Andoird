@@ -193,9 +193,17 @@ public class MenuActivity extends BaseActivity {
 
             tvFoodName.setText("COMBO " + combo.getName());
             tvDetailedDescription.setText(combo.getDescription());
+
+            // GIÁ COMBO: KHÔNG GẠCH
             tvFoodPrice.setText(combo.getComboPrice() + " VNĐ");
-            tvFoodSalePrice.setText("Giá gốc: " + combo.getOriginalPrice() + " VNĐ");
+            tvFoodPrice.setPaintFlags(0); // XÓA GẠCH
+
+            // GIÁ GỐC: CÓ GẠCH
+            tvFoodSalePrice.setText(combo.getOriginalPrice() + " VNĐ");
             tvFoodSalePrice.setPaintFlags(tvFoodSalePrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            tvFoodSalePrice.setVisibility(View.VISIBLE);
+
+            // Ẩn size
             tvSelectedPrice.setVisibility(View.GONE);
             spSize.setVisibility(View.GONE);
 

@@ -62,7 +62,7 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
 
         // === TÊN ===
         if (item.isCombo()) {
-            holder.tvName.setText("COMBO " + item.getName());
+            holder.tvName.setText(" " + item.getName());
             holder.tvName.setTextColor(context.getResources().getColor(R.color.combo_text));
         } else {
             holder.tvName.setText(item.getName());
@@ -72,28 +72,29 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
         // === MÔ TẢ ===
         holder.tvDescription.setText(item.getDescription());
 
-        // === GIÁ & KHUYẾN MÃI ===
+
+        // === COMBO ===
         if (item.isCombo()) {
-            int comboPrice = item.getPrice();           // Giá đã giảm
-            int originalPrice = item.getSalePrice() != null ? item.getSalePrice() : item.getPrice();
+            int comboPrice = item.getPrice();
+            int originalPrice = item.getSalePrice(); // Lưu giá gốc ở đây
             int savings = originalPrice - comboPrice;
 
-            // Giá combo
             holder.tvPrice.setText(comboPrice + " VNĐ");
-            holder.tvPrice.setPaintFlags(holder.tvPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            holder.tvPrice.setPaintFlags(0); // KHÔNG GẠCH GIÁ COMBO
 
-            // Tiết kiệm
-            holder.tvSavings.setText("Tiết kiệm " + savings + " VNĐ");
+            holder.tvSavings.setText("Giá gốc: " + originalPrice + " VNĐ");
+            holder.tvSavings.setPaintFlags(holder.tvSavings.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             holder.tvSavings.setVisibility(View.VISIBLE);
 
-            // Badge COMBO
             holder.tvComboBadge.setVisibility(View.VISIBLE);
         } else {
-            // Món thường
+            // MÓN THƯỜNG: GIÁ GIẢM → GẠCH GIÁ GỐC
             if (item.getSalePrice() != null && item.getSalePrice() < item.getPrice()) {
                 holder.tvPrice.setText(item.getSalePrice() + " VNĐ");
-                holder.tvPrice.setPaintFlags(holder.tvPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-                holder.tvSavings.setText("Giảm " + (item.getPrice() - item.getSalePrice()) + " VNĐ");
+                holder.tvPrice.setPaintFlags(0);
+
+                holder.tvSavings.setText("Giá gốc: " + item.getPrice() + " VNĐ");
+                holder.tvSavings.setPaintFlags(holder.tvSavings.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                 holder.tvSavings.setVisibility(View.VISIBLE);
             } else {
                 holder.tvPrice.setText(item.getPrice() + " VNĐ");
@@ -102,7 +103,6 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
             }
             holder.tvComboBadge.setVisibility(View.GONE);
         }
-
         // === ĐÁNH GIÁ ===
         holder.tvRating.setText("Đánh giá: " + item.getRating() + "/5");
 
