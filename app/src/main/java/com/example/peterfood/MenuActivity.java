@@ -4,14 +4,19 @@ import java.util.stream.Collectors;  // Để dùng stream (nếu Java 8+)
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -139,18 +144,33 @@ public class MenuActivity extends BaseActivity {
     }
 
     private void showFoodDetailDialog(FoodItem item) {
-        Log.d("Dialog", "showFoodDetailDialog called for: " + item.getName());
+        Log.d("Dialog", "Opening detail for: " + item.getName());
 
-        // BỎ QUA HEADER
         if ("header_combo".equals(item.getDocumentId()) || "header_food".equals(item.getDocumentId())) {
-            Log.d("Dialog", "Header clicked - ignored");
             return;
         }
 
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_food_details);
 
-        // === TÌM TẤT CẢ VIEW ===
+        // === LẤY KÍCH THƯỚC MÀN HÌNH ===
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenWidth = displayMetrics.widthPixels;
+        int screenHeight = displayMetrics.heightPixels;
+
+        // === SET 95% MÀN HÌNH ===
+        Window window = dialog.getWindow();
+        if (window != null) {
+            WindowManager.LayoutParams params = window.getAttributes();
+            params.width = (int) (screenWidth * 0.95);   // 95% chiều rộng
+            params.height = (int) (screenHeight * 0.95); // 95% chiều cao
+            params.gravity = Gravity.CENTER;
+            window.setAttributes(params);
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        // === TÌM VIEW ===
         ImageView ivFoodImage = dialog.findViewById(R.id.ivFoodImage);
         TextView tvFoodName = dialog.findViewById(R.id.tvFoodName);
         TextView tvDetailedDescription = dialog.findViewById(R.id.tvDetailedDescription);
@@ -164,145 +184,83 @@ public class MenuActivity extends BaseActivity {
         Button btnEditFood = dialog.findViewById(R.id.btnEditFood);
         Button btnDeleteFood = dialog.findViewById(R.id.btnDeleteFood);
         Button btnClose = dialog.findViewById(R.id.btnClose);
+        LinearLayout llBottomButtons = dialog.findViewById(R.id.llBottomButtons);
 
-        // === KIỂM TRA NULL ===
-        if (tvFoodName == null || tvFoodPrice == null || btnAddToCart == null) {
-            Log.e("Dialog", "Một số view bị null! Kiểm tra dialog_food_details.xml");
-            Toast.makeText(this, "Lỗi layout dialog", Toast.LENGTH_LONG).show();
+        if (tvFoodName == null || btnAddToCart == null) {
+            Toast.makeText(this, "Lỗi layout", Toast.LENGTH_LONG).show();
             return;
         }
 
-        // === ẢNH ===
-        Glide.with(this)
-                .load(item.getImageUrl())
-                .placeholder(android.R.drawable.ic_menu_gallery)
-                .error(android.R.drawable.ic_menu_report_image)
-                .into(ivFoodImage);
-
-        // === ĐÁNH GIÁ ===
+        // === HIỂN THỊ NỘI DUNG ===
+        Glide.with(this).load(item.getImageUrl()).into(ivFoodImage);
+        tvFoodName.setText(item.getName());
+        tvDetailedDescription.setText(item.getDetailedDescription());
         tvFoodRating.setText("Đánh giá: " + item.getRating() + "/5");
 
-        // === BIẾN FINAL CHO LAMBDA ===
-        final FoodItem finalItem = item;
-        final Integer salePrice = item.getSalePrice();
+        // === GIÁ + SIZE ===
         final int price = item.getPrice();
+        final Integer salePrice = item.getSalePrice();
 
-        // === XỬ LÝ COMBO ===
-        if (item.isCombo() && item.getComboData() != null) {
-            ComboItem combo = item.getComboData();
-
-            tvFoodName.setText("COMBO " + combo.getName());
-            tvDetailedDescription.setText(combo.getDescription());
-
-            // GIÁ COMBO: KHÔNG GẠCH
-            tvFoodPrice.setText(combo.getComboPrice() + " VNĐ");
-            tvFoodPrice.setPaintFlags(0); // XÓA GẠCH
-
-            // GIÁ GỐC: CÓ GẠCH
-            tvFoodSalePrice.setText(combo.getOriginalPrice() + " VNĐ");
+        if (salePrice != null && salePrice < price) {
+            tvFoodPrice.setText(salePrice + " VNĐ");
+            tvFoodSalePrice.setText("Giá gốc: " + price + " VNĐ");
             tvFoodSalePrice.setPaintFlags(tvFoodSalePrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             tvFoodSalePrice.setVisibility(View.VISIBLE);
-
-            // Ẩn size
-            tvSelectedPrice.setVisibility(View.GONE);
-            spSize.setVisibility(View.GONE);
-
-            btnAddToCart.setOnClickListener(v -> {
-                addComboToCart(combo);
-                dialog.dismiss();
-            });
-
         } else {
-            // === MÓN ĂN THƯỜNG ===
-            tvFoodName.setText(finalItem.getName());
-            tvDetailedDescription.setText(finalItem.getDetailedDescription());
-
-            // Giá gốc + giảm
-            if (salePrice != null && salePrice < price) {
-                tvFoodPrice.setText(salePrice + " VNĐ");
-                tvFoodSalePrice.setText("Giá gốc: " + price + " VNĐ");
-                tvFoodSalePrice.setPaintFlags(tvFoodSalePrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            } else {
-                tvFoodPrice.setText(price + " VNĐ");
-                tvFoodSalePrice.setVisibility(View.GONE);
-            }
-
-            // === SPINNER SIZE ===
-            Map<String, Long> sizePrices = finalItem.getSizePrices();
-            if (sizePrices == null || sizePrices.isEmpty()) {
-                sizePrices = new HashMap<>();
-                sizePrices.put("Small", (long) price);
-            }
-
-            List<String> sizes = new ArrayList<>(sizePrices.keySet());
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sizes);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spSize.setAdapter(adapter);
-
-            final Map<String, Long> finalSizePrices = sizePrices;
-
-            spSize.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                    String size = sizes.get(pos);
-                    long selectedPrice = finalSizePrices.get(size);
-                    tvSelectedPrice.setText("Giá đã chọn: " + selectedPrice + " VNĐ");
-                }
-                @Override public void onNothingSelected(AdapterView<?> parent) {}
-            });
-
-            // === GHI CHÚ ===
-            final String[] note = {""};
-            etNote.addTextChangedListener(new TextWatcher() {
-                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-                @Override public void afterTextChanged(Editable s) { note[0] = s.toString(); }
-            });
-
-            // === THÊM VÀO GIỎ ===
-            btnAddToCart.setOnClickListener(v -> {
-                String size = (String) spSize.getSelectedItem();
-                if (size == null) {
-                    Toast.makeText(this, "Vui lòng chọn kích cỡ", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                long selectedPrice = finalSizePrices.get(size);
-
-                Map<String, Object> cartItem = new HashMap<>();
-                cartItem.put("foodId", finalItem.getDocumentId());
-                cartItem.put("name", finalItem.getName());
-                cartItem.put("price", selectedPrice);
-                cartItem.put("size", size);
-                cartItem.put("imageUrl", finalItem.getImageUrl());
-                if (!note[0].isEmpty()) cartItem.put("note", note[0]);
-
-                db.collection("users").document(mAuth.getCurrentUser().getUid())
-                        .update("cart", FieldValue.arrayUnion(cartItem))
-                        .addOnSuccessListener(a -> {
-                            Toast.makeText(this, "Đã thêm: " + finalItem.getName() + " (" + size + ")", Toast.LENGTH_SHORT).show();
-                            dialog.dismiss();
-                        })
-                        .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-            });
+            tvFoodPrice.setText(price + " VNĐ");
+            tvFoodSalePrice.setVisibility(View.GONE);
         }
 
-        // === ADMIN: SỬA / XÓA ===
+        // === SPINNER SIZE ===
+        Map<String, Long> sizePrices = item.getSizePrices();
+        if (sizePrices == null || sizePrices.isEmpty()) {
+            sizePrices = new HashMap<>();
+            sizePrices.put("Small", (long) price);
+        }
+        List<String> sizes = new ArrayList<>(sizePrices.keySet());
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sizes);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spSize.setAdapter(adapter);
+
+        final Map<String, Long> finalSizePrices = sizePrices;
+        spSize.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                String size = sizes.get(pos);
+                long selectedPrice = finalSizePrices.get(size);
+                tvSelectedPrice.setText("Giá đã chọn: " + selectedPrice + " VNĐ");
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        // === GHI CHÚ ===
+        final String[] note = {""};
+        etNote.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) { note[0] = s.toString(); }
+        });
+
+        // === ADMIN: 4 NÚT ===
         if ("admin".equals(role)) {
             btnEditFood.setVisibility(View.VISIBLE);
             btnDeleteFood.setVisibility(View.VISIBLE);
 
-            btnEditFood.setOnClickListener(v -> {
-                dialog.dismiss();
-                showEditFoodDialog(finalItem);
-            });
+            // Căn đều 4 nút
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+            params.setMargins(8, 0, 8, 0);
+            btnAddToCart.setLayoutParams(params);
+            btnEditFood.setLayoutParams(params);
+            btnDeleteFood.setLayoutParams(params);
+            btnClose.setLayoutParams(params);
 
+            btnEditFood.setOnClickListener(v -> { dialog.dismiss(); showEditFoodDialog(item); });
             btnDeleteFood.setOnClickListener(v -> {
                 new AlertDialog.Builder(this)
                         .setTitle("Xóa món")
-                        .setMessage("Xóa " + finalItem.getName() + "?")
+                        .setMessage("Xóa " + item.getName() + "?")
                         .setPositiveButton("Xóa", (d, w) -> {
-                            db.collection("NewFoodDB").document(finalItem.getDocumentId())
-                                    .delete()
+                            db.collection("NewFoodDB").document(item.getDocumentId()).delete()
                                     .addOnSuccessListener(a -> {
                                         Toast.makeText(this, "Đã xóa", Toast.LENGTH_SHORT).show();
                                         dialog.dismiss();
@@ -313,13 +271,42 @@ public class MenuActivity extends BaseActivity {
                         .show();
             });
         } else {
+            // === USER: 2 NÚT, CĂN GIỮA ===
             btnEditFood.setVisibility(View.GONE);
             btnDeleteFood.setVisibility(View.GONE);
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+            params.setMargins(32, 0, 32, 0);  // Khoảng cách lớn hơn
+            btnAddToCart.setLayoutParams(params);
+            btnClose.setLayoutParams(params);
         }
 
-        // === NÚT ĐÓNG ===
-        btnClose.setOnClickListener(v -> dialog.dismiss());
+        // === THÊM VÀO GIỎ ===
+        btnAddToCart.setOnClickListener(v -> {
+            String size = (String) spSize.getSelectedItem();
+            if (size == null) {
+                Toast.makeText(this, "Chọn kích cỡ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            long selectedPrice = finalSizePrices.get(size);
 
+            Map<String, Object> cartItem = new HashMap<>();
+            cartItem.put("foodId", item.getDocumentId());
+            cartItem.put("name", item.getName());
+            cartItem.put("price", selectedPrice);
+            cartItem.put("size", size);
+            cartItem.put("imageUrl", item.getImageUrl());
+            if (!note[0].isEmpty()) cartItem.put("note", note[0]);
+
+            db.collection("users").document(mAuth.getCurrentUser().getUid())
+                    .update("cart", FieldValue.arrayUnion(cartItem))
+                    .addOnSuccessListener(a -> {
+                        Toast.makeText(this, "Đã thêm!", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    });
+        });
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
     private void showAddFoodDialog() {

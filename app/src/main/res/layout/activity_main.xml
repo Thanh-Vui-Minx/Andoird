@@ -1,71 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/background">
+    android:layout_height="match_parent">
+    <View
+        android:id="@+id/topBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background" />
+    <FrameLayout
+        android:id="@+id/whiteCircle"
+        android:layout_width="215dp"
+        android:layout_height="209dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="181dp"
+        android:layout_marginEnd="100dp"
+        android:background="@drawable/ray_circle"
+        android:elevation="8dp">
+        <ImageView
+            android:id="@+id/ivLogo"
+            android:layout_width="147dp"
+            android:layout_height="140dp"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside" />
 
-    <ImageView
-        android:id="@+id/ivLogo"
-        android:layout_width="381dp"
-        android:layout_height="225dp"
-        android:layout_marginBottom="24dp"
-        android:adjustViewBounds="true"
-        android:cropToPadding="true"
-        android:scaleType="centerInside" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Kính chào quý khách:"
-        android:textColor="@color/primary" />
-
-    <TextView
+    </FrameLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="600dp"
+        android:layout_below="@+id/whiteCircle"
+        android:layout_marginTop="-120dp"
+        android:background="@drawable/white_circle" />
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="64dp"
-        android:text="PETER FOOD"
-        android:textAlignment="center"
-        android:textColor="#FF5722"
-        android:textSize="32sp"
-        android:textStyle="bold" />
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:layout_below="@+id/whiteCircle"
+        android:layout_marginTop="-60dp"
+        android:gravity="center_horizontal">
 
-    <EditText
-        android:id="@+id/etUsername"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Tên người dùng"
-        android:inputType="text"
-        android:background="@color/surface"
-        android:padding="12dp"
-        android:layout_marginBottom="8dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kính chào quý khách:"
+            android:textColor="@color/primary"
+            android:layout_marginTop="40dp" />
 
-    <EditText
-        android:id="@+id/etPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Mật khẩu"
-        android:inputType="textPassword"
-        android:background="#F0F0F0"
-        android:padding="12dp"
-        android:layout_marginBottom="16dp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="PETER FOOD"
+            android:textAlignment="center"
+            android:textColor="#FF5722"
+            android:textSize="32sp"
+            android:textStyle="bold" />
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Đăng nhập"
-        android:onClick="onLoginClick"
-        style="@style/AppButton"
-        android:layout_marginBottom="8dp" />
+        <EditText
+            android:id="@+id/etUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tên người dùng"
+            android:inputType="text"
+            android:background="@color/surface"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp" />
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Đăng ký"
-        android:onClick="onSignupClick"
-        style="@style/AppButton"
-        android:backgroundTint="@color/primaryDark" />
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Mật khẩu"
+            android:inputType="textPassword"
+            android:background="@color/surface"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
 
-</LinearLayout>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đăng nhập"
+            android:onClick="onLoginClick"
+            style="@style/AppButton"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đăng ký"
+            android:onClick="onSignupClick"
+            style="@style/AppButton"
+            android:backgroundTint="@color/primaryDark" />
+
+    </LinearLayout>
+
+</RelativeLayout>

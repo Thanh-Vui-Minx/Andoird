@@ -1,82 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FFF8E1"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/ivLogo"
-        android:layout_width="378dp"
-        android:layout_height="230dp"
-        android:layout_marginBottom="30dp"
-        android:scaleType="centerInside" />
-    <TextView
-        android:id="@+id/textView"
+    <View
+        android:id="@+id/topBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background" />
+
+    <FrameLayout
+        android:id="@+id/whiteCircle"
+        android:layout_width="203dp"
+        android:layout_height="197dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="181dp"
+        android:layout_marginEnd="112dp"
+        android:background="@drawable/ray_circle"
+        android:elevation="8dp">
+
+        <ImageView
+            android:id="@+id/ivLogo"
+            android:layout_width="147dp"
+            android:layout_height="140dp"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside" />
+    </FrameLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="600dp"
+        android:layout_below="@+id/whiteCircle"
+        android:layout_marginTop="-120dp"
+        android:background="@drawable/white_circle" />
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Kính chào quý khách:"
-        android:textColor="#FF5722" />
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:layout_below="@+id/whiteCircle"
+        android:layout_marginTop="-60dp"
+        android:gravity="center_horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kính chào quý khách:"
+            android:textColor="@color/primary"
+            android:layout_marginTop="40dp" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="64dp"
-        android:text="PETER FOOD"
-        android:textAlignment="center"
-        android:textColor="#FF5722"
-        android:textSize="32sp"
-        android:textStyle="bold" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="64dp"
+            android:text="PETER FOOD"
+            android:textAlignment="center"
+            android:textColor="#FF5722"
+            android:textSize="32sp"
+            android:textStyle="bold" />
 
-    <EditText
-        android:id="@+id/etNewUsername"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="#F0F0F0"
-        android:hint="Tên người dùng"
-        android:inputType="text"
-        android:padding="12dp" />
+        <EditText
+            android:id="@+id/etNewUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@color/surface"
+            android:hint="Tên người dùng"
+            android:inputType="text"
+            android:padding="12dp" />
 
-    <EditText
-        android:id="@+id/etNewPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="#F0F0F0"
-        android:hint="Mật khẩu"
-        android:inputType="textPassword"
-        android:padding="12dp" />
+        <EditText
+            android:id="@+id/etNewPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@color/surface"
+            android:hint="Mật khẩu"
+            android:inputType="textPassword"
+            android:padding="12dp" />
 
-    <EditText
-        android:id="@+id/etSDT"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:background="#F0F0F0"
-        android:hint="Số điện thoại"
-        android:inputType="phone"
-        android:padding="12dp" />
+        <EditText
+            android:id="@+id/etSDT"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@color/surface"
+            android:hint="Số điện thoại"
+            android:inputType="phone"
+            android:padding="12dp" />
 
-    <Button
-        android:id="@+id/btnSignUp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="#4CAF50"
-        android:onClick="onSignUpClick"
-        android:text="Đăng ký"
-        android:textColor="#FFFFFF" />
+        <Button
+            android:id="@+id/btnSignUp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="#4CAF50"
+            android:onClick="onSignUpClick"
+            android:text="Đăng ký"
+            android:textColor="#FFFFFF" />
 
-    <Button
-        android:id="@+id/btnBackToLogin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#9E9E9E"
-        android:onClick="goBackToLogin"
-        android:text="Quay lại đăng nhập"
-        android:textColor="#FFFFFF" />
+        <Button
+            android:id="@+id/btnBackToLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#9E9E9E"
+            android:onClick="goBackToLogin"
+            android:text="Quay lại đăng nhập"
+            android:textColor="#FFFFFF" />
 
-</LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
