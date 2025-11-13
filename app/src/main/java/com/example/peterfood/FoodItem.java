@@ -39,8 +39,9 @@ public class FoodItem {
         this.comments = new ArrayList<>(); // Khởi tạo danh sách bình luận
     }
     public FoodItem(ComboItem combo) {
-        this.documentId = "combo_" + combo.getId();  // ID giả, không lưu vào Firestore
-        this.name = "COMBO " + combo.getName();      // Tên nổi bật
+        // Use the real combo document ID so lookups match the Firestore-loaded ComboItem.id
+        this.documentId = combo.getId() != null ? combo.getId() : "";
+        this.name = combo.getName() != null ? combo.getName() : "COMBO";      // Tên nổi bật
         this.description = combo.getDescription();
         this.price = combo.getComboPrice();          // Giá đã giảm
         this.salePrice = combo.getOriginalPrice();   // Giá gốc (hiển thị gạch ngang)

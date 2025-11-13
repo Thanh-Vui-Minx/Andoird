@@ -27,7 +27,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="PETER FOOD"
+            android:text="@string/app_title"
             android:layout_gravity="center"
             android:textColor="@color/primary"
             android:textSize="20sp"
@@ -39,7 +39,7 @@
         android:id="@+id/etSearch"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Tìm kiếm món ăn..."
+        android:hint="@string/hint_search_food"
         android:inputType="text"
         android:drawableStart="@android:drawable/ic_menu_search"
         android:padding="12dp"
@@ -98,7 +98,7 @@
                     android:src="@android:drawable/ic_menu_add"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:scaleType="centerInside"
-                    android:contentDescription="Thêm"
+                    android:contentDescription="@string/cd_add"
                     android:padding="8dp"
                     app:tint="@color/secondary" />
 
@@ -106,7 +106,7 @@
                     android:id="@+id/tvAddFoodLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Thêm"
+                    android:text="@string/label_add"
                     android:textSize="12sp"
                         android:textColor="@color/secondary"
                     android:layout_marginTop="2dp" />
@@ -129,14 +129,14 @@
                     android:src="@android:drawable/ic_menu_agenda"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:scaleType="centerInside"
-                    android:contentDescription="Giỏ"
+                    android:contentDescription="@string/cd_cart"
                     android:padding="8dp"
                     app:tint="@color/primaryDark" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Giỏ"
+                    android:text="@string/label_cart"
                     android:textSize="12sp"
                     android:textColor="@color/primaryDark"
                     android:layout_marginTop="2dp" />
@@ -159,14 +159,14 @@
                     android:src="@android:drawable/ic_menu_myplaces"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:scaleType="centerInside"
-                    android:contentDescription="Hồ sơ"
+                    android:contentDescription="@string/cd_profile"
                     android:padding="8dp"
                     app:tint="@color/accent" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Hồ sơ"
+                    android:text="@string/label_profile"
                     android:textSize="12sp"
                     android:textColor="@color/accent"
                     android:layout_marginTop="2dp" />
@@ -189,14 +189,14 @@
                     android:src="@android:drawable/ic_menu_close_clear_cancel"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:scaleType="centerInside"
-                    android:contentDescription="Đăng xuất"
+                    android:contentDescription="@string/cd_logout"
                     android:padding="8dp"
                     app:tint="@color/danger" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Thoát"
+                    android:text="@string/label_logout"
                     android:textSize="12sp"
                     android:textColor="@color/danger"
                     android:layout_marginTop="2dp" />

@@ -279,7 +279,9 @@ public class CartActivity extends AppCompatActivity {
 
         final TextView tvOrderSummary = dialog.findViewById(R.id.tvOrderSummary);
         final TextView tvDeliveryAddressDialog = dialog.findViewById(R.id.tvDeliveryAddressDialog);
-        final EditText etUpdateAddress = dialog.findViewById(R.id.etUpdateAddress);
+    final EditText etUpdateAddress = dialog.findViewById(R.id.etUpdateAddress);
+    final EditText etRecipientName = dialog.findViewById(R.id.etRecipientName);
+    final EditText etRecipientPhone = dialog.findViewById(R.id.etRecipientPhone);
         final android.widget.RadioGroup rgPaymentMethod = dialog.findViewById(R.id.rgPaymentMethod);
         final android.widget.RadioButton rbCOD = dialog.findViewById(R.id.rbCOD);
         final android.widget.RadioButton rbATM = dialog.findViewById(R.id.rbATM);
@@ -296,8 +298,13 @@ public class CartActivity extends AppCompatActivity {
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
                             String address = documentSnapshot.getString("address");
+                            String fullname = documentSnapshot.getString("fullname");
+                            String phone = documentSnapshot.getString("phone");
+
                             tvDeliveryAddressDialog.setText("Địa chỉ hiện tại: " + (address != null ? address : "Chưa cập nhật"));
                             etUpdateAddress.setText(address != null ? address : "");
+                            etRecipientName.setText(fullname != null ? fullname : "");
+                            etRecipientPhone.setText(phone != null ? phone : "");
                         }
                     })
                     .addOnFailureListener(e -> Log.e(TAG, "Lỗi khi tải địa chỉ: " + e.getMessage()));
@@ -320,12 +327,28 @@ public class CartActivity extends AppCompatActivity {
 
     btnConfirmOrder.setOnClickListener(v -> {
             String newAddress = etUpdateAddress.getText().toString().trim();
+            String recipientName = etRecipientName.getText().toString().trim();
+            String recipientPhone = etRecipientPhone.getText().toString().trim();
+
+            if (TextUtils.isEmpty(recipientName)) {
+                Toast.makeText(this, "Vui lòng nhập tên người nhận", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (TextUtils.isEmpty(recipientPhone) || recipientPhone.length() < 7) {
+                Toast.makeText(this, "Vui lòng nhập số điện thoại hợp lệ", Toast.LENGTH_SHORT).show();
+                return;
+            }
             if (TextUtils.isEmpty(newAddress)) {
                 Toast.makeText(this, "Vui lòng nhập địa chỉ giao hàng", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             Map<String, Object> updateData = new HashMap<>();
             updateData.put("address", newAddress);
+            updateData.put("fullname", recipientName);
+            updateData.put("phone", recipientPhone);
+            // add to addresses array for quick access (merge will create array if missing)
+            updateData.put("addresses", FieldValue.arrayUnion(newAddress));
 
             // Determine payment method
             String paymentMethod; // default
@@ -346,6 +369,8 @@ public class CartActivity extends AppCompatActivity {
             Map<String, Object> orderData = new HashMap<>();
             orderData.put("userId", currentUser.getUid());
             orderData.put("address", newAddress);
+            orderData.put("recipientName", recipientName);
+            orderData.put("recipientPhone", recipientPhone);
             orderData.put("paymentMethod", paymentMethod);
             orderData.put("paymentStatus", paymentStatus);
             orderData.put("bankRef", bankRef);
@@ -365,7 +390,7 @@ public class CartActivity extends AppCompatActivity {
             if (appliedVoucherId[0] != null) orderData.put("voucherId", appliedVoucherId[0]);
             orderData.put("createdAt", com.google.firebase.firestore.FieldValue.serverTimestamp());
 
-            // update user address then create order
+        // update user address/phone/name then create order
             // Use set(..., SetOptions.merge()) so it won't fail if the user doc did not previously exist
             db.collection("users").document(currentUser.getUid())
                     .set(updateData, SetOptions.merge())

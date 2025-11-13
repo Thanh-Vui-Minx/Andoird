@@ -14,23 +14,62 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="THÊM/SỬA MÓN"
+            android:text="THÊM/SỬA COMBO"
             android:textSize="22sp"
             android:textStyle="bold"
             android:textColor="@color/primary"
             android:gravity="center"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="16dp" />
 
-        <!-- Image URL + Preview -->
+        <!-- Combo Name -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="URL ảnh:" 
+            android:text="Tên combo:"
             android:textStyle="bold"
             android:textColor="@color/textPrimary" />
 
         <EditText
-            android:id="@+id/etFoodImageUrl"
+            android:id="@+id/etComboName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ví dụ: Combo Gia Đình"
+            android:inputType="text"
+            android:padding="12dp"
+            android:background="@drawable/search_background"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Description -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mô tả:"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary" />
+
+        <EditText
+            android:id="@+id/etComboDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Mô tả combo"
+            android:inputType="textMultiLine"
+            android:minLines="2"
+            android:padding="12dp"
+            android:background="@drawable/search_background"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Image URL -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="URL ảnh:"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary" />
+
+        <EditText
+            android:id="@+id/etComboImageUrl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="https://..."
@@ -40,74 +79,16 @@
             android:layout_marginTop="4dp"
             android:layout_marginBottom="8dp" />
 
+        <!-- Image Preview -->
         <ImageView
-            android:id="@+id/ivFoodImageAdd"
+            android:id="@+id/ivComboImagePreview"
             android:layout_width="match_parent"
-            android:layout_height="160dp"
+            android:layout_height="150dp"
             android:scaleType="centerCrop"
             android:background="@color/surface"
-            android:layout_marginBottom="12dp"
-            android:src="@android:drawable/ic_menu_gallery" />
-
-        <!-- Name -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Tên món:" 
-            android:textStyle="bold"
-            android:textColor="@color/textPrimary" />
-
-        <EditText
-            android:id="@+id/etFoodName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Ví dụ: Phở Bò"
-            android:inputType="text"
-            android:padding="12dp"
-            android:background="@drawable/search_background"
-            android:layout_marginTop="4dp"
             android:layout_marginBottom="12dp" />
 
-        <!-- Short Description -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Mô tả ngắn:" 
-            android:textStyle="bold"
-            android:textColor="@color/textPrimary" />
-
-        <EditText
-            android:id="@+id/etFoodDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Mô tả ngắn" 
-            android:inputType="text"
-            android:padding="12dp"
-            android:background="@drawable/search_background"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="12dp" />
-
-        <!-- Detailed Description -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Mô tả chi tiết:" 
-            android:textStyle="bold"
-            android:textColor="@color/textPrimary" />
-
-        <EditText
-            android:id="@+id/etDetailedDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Mô tả chi tiết"
-            android:inputType="textMultiLine"
-            android:minLines="2"
-            android:padding="12dp"
-            android:background="@drawable/search_background"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="12dp" />
-
-        <!-- Pricing: two columns for small and sale -->
+        <!-- Pricing -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -123,15 +104,15 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Giá (Small):" 
+                    android:text="Giá gốc:"
                     android:textStyle="bold"
                     android:textColor="@color/textPrimary" />
 
                 <EditText
-                    android:id="@+id/etFoodPrice"
+                    android:id="@+id/etComboOriginalPrice"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="20000"
+                    android:hint="200000"
                     android:inputType="number"
                     android:padding="12dp"
                     android:background="@drawable/search_background"
@@ -148,15 +129,15 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Giá giảm:" 
+                    android:text="Giá combo:"
                     android:textStyle="bold"
                     android:textColor="@color/textPrimary" />
 
                 <EditText
-                    android:id="@+id/etFoodSalePrice"
+                    android:id="@+id/etComboPrice"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="15000"
+                    android:hint="150000"
                     android:inputType="number"
                     android:padding="12dp"
                     android:background="@drawable/search_background"
@@ -164,72 +145,105 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Medium / Large prices -->
-        <LinearLayout
+        <!-- Limited Time Checkbox -->
+        <CheckBox
+            android:id="@+id/cbLimitedTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp">
+            android:text="⏰ Combo giới hạn thời gian"
+            android:textStyle="bold"
+            android:textColor="@color/primary"
+            android:layout_marginTop="16dp" />
 
-            <EditText
-                android:id="@+id/etMediumPrice"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Medium (VNĐ)"
-                android:inputType="number"
-                android:padding="12dp"
-                android:background="@drawable/search_background"
-                android:layout_marginEnd="8dp" />
+        <!-- Date Range Container -->
+        <LinearLayout
+            android:id="@+id/llDateRange"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFF3E0"
+            android:padding="12dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone">
 
-            <EditText
-                android:id="@+id/etLargePrice"
-                android:layout_width="0dp"
+            <TextView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Large (VNĐ)"
-                android:inputType="number"
-                android:padding="12dp"
-                android:background="@drawable/search_background"
-                android:layout_marginStart="8dp" />
+                android:text="Thời gian áp dụng:"
+                android:textStyle="bold"
+                android:textColor="@color/textPrimary"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnStartDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Ngày bắt đầu"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="4dp" />
+
+                <Button
+                    android:id="@+id/btnEndDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Ngày kết thúc"
+                    android:textSize="12sp"
+                    android:layout_marginStart="4dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvDateRange"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Chưa chọn"
+                android:textColor="@color/textSecondary"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp" />
         </LinearLayout>
 
-        <!-- Tag Spinner -->
+        <!-- Food Selection -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Loại món:" 
+            android:text="📦 Chọn món ăn cho combo:"
             android:textStyle="bold"
-            android:textColor="@color/textPrimary"
-            android:layout_marginTop="12dp" />
+            android:textColor="@color/primary"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
 
-        <Spinner
-            android:id="@+id/spFoodTag"
+        <Button
+            android:id="@+id/btnSelectFoodItems"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:entries="@array/food_tags"
-            android:prompt="@string/chon_loai_mon_an"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="12dp" />
+            android:text="+ Chọn món ăn"
+            android:textColor="@android:color/white"
+            android:background="@color/accent"
+            android:layout_marginBottom="8dp" />
 
-        <!-- Rating -->
+        <!-- Selected Items List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSelectedFoodItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:nestedScrollingEnabled="false" />
+
         <TextView
+            android:id="@+id/tvSelectedItemsInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Đánh giá (0-5):" 
-            android:textStyle="bold"
-            android:textColor="@color/textPrimary" />
-
-        <EditText
-            android:id="@+id/etFoodRating"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="0"
-            android:inputType="number"
-            android:padding="12dp"
-            android:background="@drawable/search_background"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="12dp" />
+            android:text="Chưa chọn món nào"
+            android:textColor="@color/textSecondary"
+            android:textSize="14sp"
+            android:layout_marginBottom="16dp" />
 
         <!-- Action Buttons -->
         <LinearLayout
@@ -238,17 +252,17 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/btnSaveFood"
+                android:id="@+id/btnSaveCombo"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Lưu"
+                android:text="Lưu Combo"
                 android:textColor="@android:color/white"
                 android:background="@color/primary"
                 android:layout_margin="4dp" />
 
             <Button
-                android:id="@+id/btnCancel"
+                android:id="@+id/btnCancelCombo"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -257,6 +271,5 @@
                 android:background="@color/textSecondary"
                 android:layout_margin="4dp" />
         </LinearLayout>
-
     </LinearLayout>
 </ScrollView>

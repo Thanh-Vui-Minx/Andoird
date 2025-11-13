@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -12,20 +13,26 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="20dp">>
+        android:padding="20dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/ivFoodImage"
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="180dp"
-                android:contentDescription="Ảnh món ăn"
-                android:scaleType="centerCrop"
-                android:src="@android:drawable/ic_menu_gallery" />
+                android:layout_height="200dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <ImageView
+                    android:id="@+id/ivFoodImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Ảnh món ăn" />
+            </androidx.cardview.widget.CardView>
 
             <TextView
                 android:id="@+id/tvFoodName"
@@ -41,18 +48,50 @@
                 android:id="@+id/tvDetailedDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:text="Mô tả chi tiết món ăn..."
                 android:textSize="16sp"
                 android:textColor="@color/textSecondary" />
 
-            <TextView
-                android:id="@+id/tvFoodPrice"
+            <!-- Pricing box similar to combo -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Giá: 0 VNĐ"
-                android:textColor="@color/primary" />
+                android:orientation="vertical"
+                android:background="#E8F5E9"
+                android:padding="12dp"
+                android:layout_marginTop="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Giá:" 
+                        android:textSize="16sp"
+                        android:textColor="@color/textSecondary" />
+
+                    <TextView
+                        android:id="@+id/tvFoodPrice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 VNĐ"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF5722" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvFoodSalePrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Giảm giá: "
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
 
             <Spinner
                 android:id="@+id/spSize"
@@ -107,13 +146,6 @@
                 android:textColor="@color/textPrimary" />
 
             <TextView
-                android:id="@+id/tvFoodSalePrice"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Giảm giá: " />
-
-            <TextView
                 android:id="@+id/tvFoodRating"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -153,58 +185,65 @@
 
     <!-- Fixed action button bar at the bottom (scrolls horizontally if needed) -->
 
+        <!-- Bottom action buttons: equal weights so Close remains visible for admin -->
         <LinearLayout
             android:id="@+id/llBottomButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:padding="16dp"
-            android:background="@color/background">
+            android:padding="12dp"
+            android:background="@color/background"
+            android:weightSum="4">
 
             <Button
                 android:id="@+id/btnAddToCart"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:minWidth="80dp"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@color/accent"
+                android:textSize="10sp"
                 android:text="Thêm"
-                android:drawableStart="@android:drawable/ic_menu_add"
-                android:drawablePadding="8dp"
-                style="@style/AppButton"
-                android:layout_marginEnd="8dp" />
+                android:textAlignment="textStart"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white" />
 
             <Button
                 android:id="@+id/btnEditFood"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:minWidth="72dp"
+                android:layout_weight="1"
+                android:textSize="10sp"
                 android:text="Sửa"
-                android:drawableStart="@android:drawable/ic_menu_edit"
-                android:drawablePadding="8dp"
-                style="@style/AppButton"
-                android:layout_marginEnd="8dp" />
+                android:textColor="@android:color/white"
+                android:background="@color/accent"
+                android:layout_margin="4dp"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btnDeleteFood"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:minWidth="72dp"
+                android:layout_weight="1"
+                android:textSize="10sp"
                 android:text="Xóa"
-                android:drawableStart="@android:drawable/ic_menu_delete"
-                android:drawablePadding="8dp"
-                style="@style/AppButton"
-                android:backgroundTint="@color/danger"
-                android:layout_marginEnd="8dp" />
+                android:textColor="@android:color/white"
+                android:background="@color/danger"
+                android:layout_margin="4dp"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btnClose"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:minWidth="72dp"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@color/textSecondary"
+                android:textSize="10sp"
                 android:text="Đóng"
-                android:drawableStart="@android:drawable/ic_menu_close_clear_cancel"
-                android:drawablePadding="8dp"
-                style="@style/AppButton" />
+                android:textAllCaps="false"
+                android:textColor="@android:color/white" />
 
         </LinearLayout>
 

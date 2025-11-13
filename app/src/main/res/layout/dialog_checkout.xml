@@ -22,6 +22,24 @@
         android:layout_marginBottom="8dp" />
 
     <EditText
+        android:id="@+id/etRecipientName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Tên người nhận"
+        android:inputType="textPersonName"
+        android:layout_marginBottom="8dp"
+        android:background="@color/surface" />
+
+    <EditText
+        android:id="@+id/etRecipientPhone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Số điện thoại người nhận"
+        android:inputType="phone"
+        android:layout_marginBottom="12dp"
+        android:background="@color/surface" />
+
+    <EditText
         android:id="@+id/etUpdateAddress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

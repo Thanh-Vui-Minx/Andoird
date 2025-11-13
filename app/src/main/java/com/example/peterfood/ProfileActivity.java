@@ -240,6 +240,10 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
         data.put("fullname", fullname);
         data.put("phone", phone);
         data.put("addresses", newAddresses);
+        // set the primary/default address so checkout can pick it up easily
+        if (!newAddresses.isEmpty()) {
+            data.put("address", newAddresses.get(0));
+        }
 
         db.collection("users").document(currentUser.getUid())
                 .update(data)

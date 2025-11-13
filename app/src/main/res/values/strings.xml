@@ -1,4 +1,18 @@
 <resources>
     <string name="app_name">Peterfood</string>
     <string name="chon_loai_mon_an">Chọn loại món ăn</string>
+    <!-- General labels -->
+    <string name="app_title">PETER FOOD</string>
+    <string name="hint_search_food">Tìm kiếm món...</string>
+    <string name="label_add">Thêm</string>
+    <string name="label_cart">Giỏ</string>
+    <string name="label_profile">Hồ sơ</string>
+    <string name="label_logout">Thoát</string>
+    <string name="cd_add">Thêm món</string>
+    <string name="cd_cart">Đi tới giỏ</string>
+    <string name="cd_profile">Hồ sơ</string>
+    <string name="cd_logout">Đăng xuất</string>
+    <!-- Combo/item labels -->
+    <string name="badge_combo">COMBO</string>
+    <string name="savings_template">Tiết kiệm %1$d VNĐ</string>
 </resources>

@@ -20,6 +20,7 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -54,6 +55,7 @@ public class MenuActivity extends BaseActivity {
     private EditText etSearch;
     private List<FoodItem> comboSectionList = new ArrayList<>();  // Combo riêng
     private List<FoodItem> regularFoodList = new ArrayList<>();   // Món thường
+    private List<FoodItem> drinkList = new ArrayList<>(); // Nước uống riêng
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,7 +125,24 @@ public class MenuActivity extends BaseActivity {
         });
 
         btnGoToCart.setOnClickListener(v -> startActivity(new Intent(MenuActivity.this, CartActivity.class)));
-        btnAddFood.setOnClickListener(v -> showAddFoodDialog());
+        btnAddFood.setOnClickListener(v -> {
+            // Show dialog with options: Add Food or Add Combo
+            if ("admin".equals(role)) {
+                String[] options = {"Thêm Món Ăn", "Thêm Combo"};
+                new AlertDialog.Builder(this)
+                        .setTitle("Chọn loại")
+                        .setItems(options, (dialog, which) -> {
+                            if (which == 0) {
+                                showAddFoodDialog();
+                            } else {
+                                showAddComboDialog();
+                            }
+                        })
+                        .show();
+            } else {
+                showAddFoodDialog();
+            }
+        });
     }
 
     private void filterFoodList(String query) {
@@ -146,7 +165,18 @@ public class MenuActivity extends BaseActivity {
     private void showFoodDetailDialog(FoodItem item) {
         Log.d("Dialog", "Opening detail for: " + item.getName());
 
-        if ("header_combo".equals(item.getDocumentId()) || "header_food".equals(item.getDocumentId())) {
+        // Skip headers
+        if ("header_combo".equals(item.getDocumentId()) || 
+            "header_limited_combo".equals(item.getDocumentId()) ||
+            "header_regular_combo".equals(item.getDocumentId()) ||
+            "header_food".equals(item.getDocumentId()) || 
+            "header_drink".equals(item.getDocumentId())) {
+            return;
+        }
+
+        // Handle combo items
+        if (item.isCombo()) {
+            showComboDetailDialog(item);
             return;
         }
 
@@ -164,7 +194,7 @@ public class MenuActivity extends BaseActivity {
         if (window != null) {
             WindowManager.LayoutParams params = window.getAttributes();
             params.width = (int) (screenWidth * 0.95);   // 95% chiều rộng
-            params.height = (int) (screenHeight * 0.95); // 95% chiều cao
+            params.height = (int) (screenHeight * 0.90); // 90% chiều cao (match combo dialog)
             params.gravity = Gravity.CENTER;
             window.setAttributes(params);
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -636,20 +666,49 @@ public class MenuActivity extends BaseActivity {
     private void updateMenuWithSections() {
         filteredFoodList.clear();
 
-        // === THÊM SECTION COMBO ===
+        // === THÊM SECTION COMBO GIỚI HẠN (nếu có) ===
+        if (!limitedCombos.isEmpty()) {
+            FoodItem limitedHeader = new FoodItem("header_limited_combo", "⏰ COMBO GIỚI HẠN", "", 0, "", 0, null);
+            limitedHeader.setIsCombo(true);
+            filteredFoodList.add(limitedHeader);
+            
+            for (ComboItem combo : limitedCombos) {
+                filteredFoodList.add(new FoodItem(combo));
+            }
+        }
+
+        // === THÊM SECTION COMBO THƯỜNG XUYÊN (nếu có) ===
+        if (!regularCombos.isEmpty()) {
+            FoodItem regularHeader = new FoodItem("header_regular_combo", "🎉 COMBO ", "", 0, "", 0, null);
+            regularHeader.setIsCombo(true);
+            filteredFoodList.add(regularHeader);
+            
+            for (ComboItem combo : regularCombos) {
+                filteredFoodList.add(new FoodItem(combo));
+            }
+        }
+
+        // === THÊM COMBO TỰ ĐỘNG (từ generateSmartCombos) ===
         if (!comboSectionList.isEmpty()) {
-            // Tạo header COMBO (dùng documentId để phân biệt)
-            FoodItem comboHeader = new FoodItem("header_combo", "COMBO HOT", "", 0, "", 0, null);
-            comboHeader.setIsCombo(true);  // Đánh dấu là header
+            FoodItem comboHeader = new FoodItem("header_combo", " COMBO GỢI Ý", "", 0, "", 0, null);
+            comboHeader.setIsCombo(true);
             filteredFoodList.add(comboHeader);
             filteredFoodList.addAll(comboSectionList);
         }
 
         // === THÊM SECTION MÓN ĂN ===
-        FoodItem foodHeader = new FoodItem("header_food", "TẤT CẢ MÓN ĂN", "", 0, "", 0, null);
+        FoodItem foodHeader = new FoodItem("header_food", " THỨC ĂN", "", 0, "", 0, null);
         foodHeader.setIsCombo(true);
         filteredFoodList.add(foodHeader);
         filteredFoodList.addAll(regularFoodList);
+
+        // === THÊM SECTION NƯỚC UỐNG ===
+        if (!drinkList.isEmpty()) {
+            FoodItem drinkHeader = new FoodItem("header_drink", " NƯỚC UỐNG", "", 0, "", 0, null);
+            drinkHeader.setIsCombo(true);
+            filteredFoodList.add(drinkHeader);
+            filteredFoodList.addAll(drinkList);
+        }
     }
 
     private void addComboToCart(ComboItem combo) {
@@ -674,6 +733,7 @@ public class MenuActivity extends BaseActivity {
                     foodList.clear();
                     comboSectionList.clear();
                     regularFoodList.clear();
+                    drinkList.clear();
 
                     // 2. ĐỌC TỪ FIRESTORE → CHỈ LÀ MÓN THƯỜNG
                     for (DocumentSnapshot doc : queryDocumentSnapshots) {
@@ -706,9 +766,13 @@ public class MenuActivity extends BaseActivity {
                                 item.setSizePrices(sizePrices != null ? sizePrices : new HashMap<>());
                                 item.setComments(comments != null ? comments : new ArrayList<>());
 
-                                // CHỈ THÊM VÀO foodList & regularFoodList
+                                // CHỈ THÊM VÀO foodList và phân loại food/drink
                                 foodList.add(item);
-                                regularFoodList.add(item);
+                                if ("nước".equals(item.getTag())) {
+                                    drinkList.add(item);
+                                } else {
+                                    regularFoodList.add(item);
+                                }
                             }
                         } catch (Exception e) {
                             Log.e(TAG, "Error parsing document: " + e.getMessage(), e);
@@ -718,10 +782,13 @@ public class MenuActivity extends BaseActivity {
                     // 3. SINH COMBO TỪ DỮ LIỆU THỰC
                     generateSmartCombos();  // ← Tạo combo → thêm vào comboSectionList
 
-                    // 4. TẠO SECTION: COMBO + MÓN ĂN
+                    // 4. TẢI COMBOS TỪ FIREBASE
+                    loadCombosFromFirebase();
+
+                    // 5. TẠO SECTION: COMBO + MÓN ĂN
                     updateMenuWithSections();
 
-                    // 5. CẬP NHẬT ADAPTER
+                    // 6. CẬP NHẬT ADAPTER
                     adapter.notifyDataSetChanged();
 
                     if (filteredFoodList.isEmpty()) {
@@ -732,5 +799,558 @@ public class MenuActivity extends BaseActivity {
                     Log.e(TAG, "Error getting food items: " + e.getMessage(), e);
                     Toast.makeText(this, "Lỗi khi tải dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    // ==================== COMBO MANAGEMENT ====================
+    private List<ComboItem> regularCombos = new ArrayList<>();
+    private List<ComboItem> limitedCombos = new ArrayList<>();
+
+    private void showComboDetailDialog(FoodItem item) {
+        // Get the combo item from the FoodItem wrapper
+        ComboItem combo = null;
+        
+        // Search in both lists
+        for (ComboItem c : regularCombos) {
+            if (c.getId() != null && c.getId().equals(item.getDocumentId())) {
+                combo = c;
+                break;
+            }
+        }
+        if (combo == null) {
+            for (ComboItem c : limitedCombos) {
+                if (c.getId() != null && c.getId().equals(item.getDocumentId())) {
+                    combo = c;
+                    break;
+                }
+            }
+        }
+
+        if (combo == null) {
+            Toast.makeText(this, "Không tìm thấy thông tin combo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_combo_detail);
+
+        Window window = dialog.getWindow();
+        if (window != null) {
+            WindowManager.LayoutParams params = window.getAttributes();
+            DisplayMetrics metrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            params.width = (int) (metrics.widthPixels * 0.95);
+            params.height = (int) (metrics.heightPixels * 0.90);
+            window.setAttributes(params);
+            // Make window background transparent so the dialog layout's rounded corners and shadows show consistently
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        // Get views
+        ImageView ivComboDetailImage = dialog.findViewById(R.id.ivComboDetailImage);
+        TextView tvComboDetailName = dialog.findViewById(R.id.tvComboDetailName);
+        TextView tvComboDetailDescription = dialog.findViewById(R.id.tvComboDetailDescription);
+        LinearLayout llLimitedInfo = dialog.findViewById(R.id.llLimitedInfo);
+        TextView tvTimeRemaining = dialog.findViewById(R.id.tvTimeRemaining);
+        TextView tvComboDetailPrice = dialog.findViewById(R.id.tvComboDetailPrice);
+        TextView tvComboDetailOriginalPrice = dialog.findViewById(R.id.tvComboDetailOriginalPrice);
+        TextView tvComboDetailSavings = dialog.findViewById(R.id.tvComboDetailSavings);
+        RecyclerView rvComboFoodItems = dialog.findViewById(R.id.rvComboFoodItems);
+        Button btnAddComboToCart = dialog.findViewById(R.id.btnAddComboToCart);
+        Button btnEditCombo = dialog.findViewById(R.id.btnEditCombo);
+        Button btnDeleteCombo = dialog.findViewById(R.id.btnDeleteCombo);
+        Button btnCloseCombo = dialog.findViewById(R.id.btnCloseCombo);
+
+        final ComboItem finalCombo = combo;
+
+        // Set data
+        tvComboDetailName.setText(combo.getName());
+        tvComboDetailDescription.setText(combo.getDescription());
+        tvComboDetailPrice.setText(String.format("%,d VNĐ", combo.getComboPrice()));
+        tvComboDetailOriginalPrice.setText(String.format("%,d VNĐ", combo.getOriginalPrice()));
+        
+        int savings = combo.getSavings();
+        int percent = (int) ((savings * 100.0) / combo.getOriginalPrice());
+        tvComboDetailSavings.setText(String.format("💰 Tiết kiệm: %,d VNĐ (%d%%)", savings, percent));
+
+        // Image
+        if (combo.getImageUrl() != null && !combo.getImageUrl().isEmpty()) {
+            Glide.with(this).load(combo.getImageUrl()).into(ivComboDetailImage);
+        }
+
+        // Limited time info
+        if (combo.isLimitedTime()) {
+            llLimitedInfo.setVisibility(View.VISIBLE);
+            tvTimeRemaining.setText("Còn lại: " + combo.getFormattedRemainingTime());
+        } else {
+            llLimitedInfo.setVisibility(View.GONE);
+        }
+
+        // Load food items in combo
+        // TODO: Create a simple adapter for combo food items
+        rvComboFoodItems.setLayoutManager(new LinearLayoutManager(this));
+
+        // Build list of FoodItem for combo
+        List<FoodItem> comboFoods = new ArrayList<>();
+        Map<String, Integer> quantities = combo.getQuantities() != null ? combo.getQuantities() : new HashMap<>();
+        if (combo.getFoodIds() != null && !combo.getFoodIds().isEmpty()) {
+            for (String fid : combo.getFoodIds()) {
+                // Try to find in loaded foodList
+                FoodItem found = null;
+                for (FoodItem f : foodList) {
+                    if (fid.equals(f.getDocumentId())) {
+                        found = f;
+                        break;
+                    }
+                }
+                if (found != null) comboFoods.add(found);
+            }
+        }
+
+        if (!comboFoods.isEmpty()) {
+            ComboFoodAdapter foodAdapter = new ComboFoodAdapter(this, comboFoods, quantities, role, new ComboFoodAdapter.OnItemAction() {
+                @Override
+                public void onAddToCart(FoodItem item, int quantity) {
+                    Map<String, Object> cartItem = new HashMap<>();
+                    cartItem.put("foodId", item.getDocumentId());
+                    cartItem.put("name", item.getName());
+                    cartItem.put("price", item.getFinalPrice());
+                    cartItem.put("size", "Small");
+                    cartItem.put("imageUrl", item.getImageUrl());
+                    cartItem.put("quantity", quantity);
+
+                    db.collection("users").document(mAuth.getCurrentUser().getUid())
+                            .update("cart", FieldValue.arrayUnion(cartItem))
+                            .addOnSuccessListener(a -> Toast.makeText(MenuActivity.this, "Đã thêm vào giỏ: " + item.getName(), Toast.LENGTH_SHORT).show())
+                            .addOnFailureListener(e -> Toast.makeText(MenuActivity.this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                }
+
+                @Override
+                public void onRemoveFromCombo(FoodItem item) {
+                    // For now, removing an item should be done via Edit Combo. Show hint to admin.
+                    Toast.makeText(MenuActivity.this, "Vui lòng dùng chức năng Sửa để thay đổi món trong combo.", Toast.LENGTH_SHORT).show();
+                }
+            });
+            rvComboFoodItems.setAdapter(foodAdapter);
+            rvComboFoodItems.setVisibility(View.VISIBLE);
+        } else {
+            rvComboFoodItems.setVisibility(View.GONE);
+        }
+
+        // Admin buttons
+        if ("admin".equals(role)) {
+            btnEditCombo.setVisibility(View.VISIBLE);
+            btnDeleteCombo.setVisibility(View.VISIBLE);
+
+            btnEditCombo.setOnClickListener(v -> {
+                dialog.dismiss();
+                showEditComboDialog(finalCombo);
+            });
+
+            btnDeleteCombo.setOnClickListener(v -> {
+                new AlertDialog.Builder(this)
+                        .setTitle("Xóa combo")
+                        .setMessage("Xóa " + finalCombo.getName() + "?")
+                        .setPositiveButton("Xóa", (d, which) -> {
+                            db.collection("combos").document(finalCombo.getId()).delete()
+                                    .addOnSuccessListener(aVoid -> {
+                                        Toast.makeText(this, "Đã xóa combo", Toast.LENGTH_SHORT).show();
+                                        dialog.dismiss();
+                                        loadCombosFromFirebase();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    });
+                        })
+                        .setNegativeButton("Hủy", null)
+                        .show();
+            });
+        } else {
+            btnEditCombo.setVisibility(View.GONE);
+            btnDeleteCombo.setVisibility(View.GONE);
+        }
+
+        // Add to cart
+        btnAddComboToCart.setOnClickListener(v -> {
+            addComboToCart(finalCombo);
+            dialog.dismiss();
+        });
+
+        btnCloseCombo.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    private void loadCombosFromFirebase() {
+        db.collection("combos")
+                .whereEqualTo("active", true)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    regularCombos.clear();
+                    limitedCombos.clear();
+                    comboSectionList.clear();
+
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        try {
+                            ComboItem combo = doc.toObject(ComboItem.class);
+                            if (combo != null) {
+                                combo.setId(doc.getId());
+                                
+                                // Chỉ thêm combo còn hợp lệ
+                                if (combo.isValid()) {
+                                    if (combo.isLimitedTime()) {
+                                        limitedCombos.add(combo);
+                                    } else {
+                                        regularCombos.add(combo);
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error parsing combo: " + e.getMessage(), e);
+                        }
+                    }
+
+                    // Cập nhật UI
+                    updateMenuWithSections();
+                    adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error loading combos: " + e.getMessage(), e);
+                });
+    }
+
+    private void showAddComboDialog() {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_add_combo);
+        
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+
+        // Get views
+        EditText etComboName = dialog.findViewById(R.id.etComboName);
+        EditText etComboDescription = dialog.findViewById(R.id.etComboDescription);
+        EditText etComboImageUrl = dialog.findViewById(R.id.etComboImageUrl);
+        ImageView ivComboImagePreview = dialog.findViewById(R.id.ivComboImagePreview);
+        EditText etComboOriginalPrice = dialog.findViewById(R.id.etComboOriginalPrice);
+        EditText etComboPrice = dialog.findViewById(R.id.etComboPrice);
+        CheckBox cbLimitedTime = dialog.findViewById(R.id.cbLimitedTime);
+        LinearLayout llDateRange = dialog.findViewById(R.id.llDateRange);
+        Button btnStartDate = dialog.findViewById(R.id.btnStartDate);
+        Button btnEndDate = dialog.findViewById(R.id.btnEndDate);
+        TextView tvDateRange = dialog.findViewById(R.id.tvDateRange);
+        Button btnSelectFoodItems = dialog.findViewById(R.id.btnSelectFoodItems);
+        RecyclerView rvSelectedFoodItems = dialog.findViewById(R.id.rvSelectedFoodItems);
+        TextView tvSelectedItemsInfo = dialog.findViewById(R.id.tvSelectedItemsInfo);
+        Button btnSaveCombo = dialog.findViewById(R.id.btnSaveCombo);
+        Button btnCancelCombo = dialog.findViewById(R.id.btnCancelCombo);
+
+        // Image preview
+        etComboImageUrl.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                String url = s.toString().trim();
+                if (!url.isEmpty()) {
+                    Glide.with(MenuActivity.this)
+                            .load(url)
+                            .placeholder(android.R.drawable.ic_menu_gallery)
+                            .error(android.R.drawable.ic_menu_report_image)
+                            .into(ivComboImagePreview);
+                }
+            }
+        });
+
+        // Limited time toggle
+        cbLimitedTime.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            llDateRange.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+        });
+
+        // Date selection
+        final Long[] startDate = {null};
+        final Long[] endDate = {null};
+
+        btnStartDate.setOnClickListener(v -> showDateTimePicker(date -> {
+            startDate[0] = date;
+            updateDateRangeText(tvDateRange, startDate[0], endDate[0]);
+        }));
+
+        btnEndDate.setOnClickListener(v -> showDateTimePicker(date -> {
+            endDate[0] = date;
+            updateDateRangeText(tvDateRange, startDate[0], endDate[0]);
+        }));
+
+        // Food selection
+        final List<String> selectedFoodIds = new ArrayList<>();
+        final Map<String, Integer> quantities = new HashMap<>();
+
+        btnSelectFoodItems.setOnClickListener(v -> {
+            showFoodSelectionDialog(selectedFoodIds, quantities, () -> {
+                tvSelectedItemsInfo.setText(selectedFoodIds.size() + " món đã chọn");
+            });
+        });
+
+        // Save combo
+        btnSaveCombo.setOnClickListener(v -> {
+            String name = etComboName.getText().toString().trim();
+            String description = etComboDescription.getText().toString().trim();
+            String imageUrl = etComboImageUrl.getText().toString().trim();
+            String originalPriceStr = etComboOriginalPrice.getText().toString().trim();
+            String comboPriceStr = etComboPrice.getText().toString().trim();
+
+            if (name.isEmpty() || originalPriceStr.isEmpty() || comboPriceStr.isEmpty()) {
+                Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (selectedFoodIds.isEmpty()) {
+                Toast.makeText(this, "Vui lòng chọn ít nhất 1 món ăn", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            try {
+                int originalPrice = Integer.parseInt(originalPriceStr);
+                int comboPrice = Integer.parseInt(comboPriceStr);
+
+                if (comboPrice >= originalPrice) {
+                    Toast.makeText(this, "Giá combo phải nhỏ hơn giá gốc", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                ComboItem combo = new ComboItem();
+                combo.setName(name);
+                combo.setDescription(description);
+                combo.setImageUrl(imageUrl);
+                combo.setOriginalPrice(originalPrice);
+                combo.setComboPrice(comboPrice);
+                combo.setFoodIds(selectedFoodIds);
+                combo.setQuantities(quantities);
+                combo.setActive(true);
+                combo.setCreatedAt(System.currentTimeMillis());
+
+                if (cbLimitedTime.isChecked()) {
+                    if (startDate[0] == null || endDate[0] == null) {
+                        Toast.makeText(this, "Vui lòng chọn thời gian bắt đầu và kết thúc", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    combo.setLimitedTime(true);
+                    combo.setStartDate(startDate[0]);
+                    combo.setEndDate(endDate[0]);
+                }
+
+                // Save to Firebase
+                Map<String, Object> comboData = new HashMap<>();
+                comboData.put("name", combo.getName());
+                comboData.put("description", combo.getDescription());
+                comboData.put("imageUrl", combo.getImageUrl());
+                comboData.put("originalPrice", combo.getOriginalPrice());
+                comboData.put("comboPrice", combo.getComboPrice());
+                comboData.put("foodIds", combo.getFoodIds());
+                comboData.put("quantities", combo.getQuantities());
+                comboData.put("active", combo.isActive());
+                comboData.put("isLimitedTime", combo.isLimitedTime());
+                comboData.put("startDate", combo.getStartDate());
+                comboData.put("endDate", combo.getEndDate());
+                comboData.put("createdAt", combo.getCreatedAt());
+
+                db.collection("combos").add(comboData)
+                        .addOnSuccessListener(docRef -> {
+                            Toast.makeText(this, "Đã thêm combo: " + name, Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                            loadCombosFromFirebase();
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
+
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Giá phải là số hợp lệ", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnCancelCombo.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    private void showEditComboDialog(ComboItem existingCombo) {
+        if (existingCombo == null) return;
+
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_add_combo);
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+
+        // Get views (same IDs as add dialog)
+        EditText etComboName = dialog.findViewById(R.id.etComboName);
+        EditText etComboDescription = dialog.findViewById(R.id.etComboDescription);
+        EditText etComboImageUrl = dialog.findViewById(R.id.etComboImageUrl);
+        ImageView ivComboImagePreview = dialog.findViewById(R.id.ivComboImagePreview);
+        EditText etComboOriginalPrice = dialog.findViewById(R.id.etComboOriginalPrice);
+        EditText etComboPrice = dialog.findViewById(R.id.etComboPrice);
+        CheckBox cbLimitedTime = dialog.findViewById(R.id.cbLimitedTime);
+        LinearLayout llDateRange = dialog.findViewById(R.id.llDateRange);
+        Button btnStartDate = dialog.findViewById(R.id.btnStartDate);
+        Button btnEndDate = dialog.findViewById(R.id.btnEndDate);
+        TextView tvDateRange = dialog.findViewById(R.id.tvDateRange);
+        Button btnSelectFoodItems = dialog.findViewById(R.id.btnSelectFoodItems);
+        RecyclerView rvSelectedFoodItems = dialog.findViewById(R.id.rvSelectedFoodItems);
+        TextView tvSelectedItemsInfo = dialog.findViewById(R.id.tvSelectedItemsInfo);
+        Button btnSaveCombo = dialog.findViewById(R.id.btnSaveCombo);
+        Button btnCancelCombo = dialog.findViewById(R.id.btnCancelCombo);
+
+        // Prefill values
+        etComboName.setText(existingCombo.getName());
+        etComboDescription.setText(existingCombo.getDescription());
+        etComboImageUrl.setText(existingCombo.getImageUrl());
+        etComboOriginalPrice.setText(String.valueOf(existingCombo.getOriginalPrice()));
+        etComboPrice.setText(String.valueOf(existingCombo.getComboPrice()));
+        if (existingCombo.isLimitedTime()) {
+            cbLimitedTime.setChecked(true);
+            llDateRange.setVisibility(View.VISIBLE);
+            updateDateRangeText(tvDateRange, existingCombo.getStartDate(), existingCombo.getEndDate());
+        } else {
+            cbLimitedTime.setChecked(false);
+            llDateRange.setVisibility(View.GONE);
+        }
+
+        // Image preview
+        Glide.with(this).load(existingCombo.getImageUrl()).placeholder(android.R.drawable.ic_menu_gallery).into(ivComboImagePreview);
+
+        // Prepare selectedFoodIds and quantities
+        final List<String> selectedFoodIds = new ArrayList<>();
+        final Map<String, Integer> quantities = new HashMap<>();
+        if (existingCombo.getFoodIds() != null) {
+            selectedFoodIds.addAll(existingCombo.getFoodIds());
+        }
+        if (existingCombo.getQuantities() != null) {
+            quantities.putAll(existingCombo.getQuantities());
+        }
+        tvSelectedItemsInfo.setText(selectedFoodIds.size() + " món đã chọn");
+
+        // Food selection button updates tvSelectedItemsInfo when done
+        btnSelectFoodItems.setOnClickListener(v -> showFoodSelectionDialog(selectedFoodIds, quantities, () -> tvSelectedItemsInfo.setText(selectedFoodIds.size() + " món đã chọn")));
+
+        // Date pickers
+        final Long[] startDate = {existingCombo.getStartDate()};
+        final Long[] endDate = {existingCombo.getEndDate()};
+        btnStartDate.setOnClickListener(v -> showDateTimePicker(date -> { startDate[0] = date; updateDateRangeText(tvDateRange, startDate[0], endDate[0]); }));
+        btnEndDate.setOnClickListener(v -> showDateTimePicker(date -> { endDate[0] = date; updateDateRangeText(tvDateRange, startDate[0], endDate[0]); }));
+
+        btnSaveCombo.setText("Cập nhật");
+        btnSaveCombo.setOnClickListener(v -> {
+            String name = etComboName.getText().toString().trim();
+            String description = etComboDescription.getText().toString().trim();
+            String imageUrl = etComboImageUrl.getText().toString().trim();
+            String originalPriceStr = etComboOriginalPrice.getText().toString().trim();
+            String comboPriceStr = etComboPrice.getText().toString().trim();
+
+            if (name.isEmpty() || originalPriceStr.isEmpty() || comboPriceStr.isEmpty()) {
+                Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (selectedFoodIds.isEmpty()) {
+                Toast.makeText(this, "Vui lòng chọn ít nhất 1 món ăn", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            try {
+                int originalPrice = Integer.parseInt(originalPriceStr);
+                int comboPrice = Integer.parseInt(comboPriceStr);
+
+                if (comboPrice >= originalPrice) {
+                    Toast.makeText(this, "Giá combo phải nhỏ hơn giá gốc", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Map<String, Object> comboData = new HashMap<>();
+                comboData.put("name", name);
+                comboData.put("description", description);
+                comboData.put("imageUrl", imageUrl);
+                comboData.put("originalPrice", originalPrice);
+                comboData.put("comboPrice", comboPrice);
+                comboData.put("foodIds", selectedFoodIds);
+                comboData.put("quantities", quantities);
+                comboData.put("active", existingCombo.isActive());
+                comboData.put("isLimitedTime", cbLimitedTime.isChecked());
+                comboData.put("startDate", cbLimitedTime.isChecked() ? startDate[0] : null);
+                comboData.put("endDate", cbLimitedTime.isChecked() ? endDate[0] : null);
+                comboData.put("createdAt", existingCombo.getCreatedAt());
+
+                // Update existing document
+                db.collection("combos").document(existingCombo.getId())
+                        .set(comboData)
+                        .addOnSuccessListener(aVoid -> {
+                            Toast.makeText(this, "Đã cập nhật combo: " + name, Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                            loadCombosFromFirebase();
+                        })
+                        .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Giá phải là số hợp lệ", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnCancelCombo.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    private void showDateTimePicker(OnDateSelectedListener listener) {
+        android.app.DatePickerDialog datePicker = new android.app.DatePickerDialog(this);
+        datePicker.setOnDateSetListener((view, year, month, dayOfMonth) -> {
+            java.util.Calendar calendar = java.util.Calendar.getInstance();
+            calendar.set(year, month, dayOfMonth, 23, 59, 59);
+            listener.onDateSelected(calendar.getTimeInMillis());
+        });
+        datePicker.show();
+    }
+
+    private void updateDateRangeText(TextView tvDateRange, Long startDate, Long endDate) {
+        if (startDate == null && endDate == null) {
+            tvDateRange.setText("Chưa chọn");
+        } else {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
+            String start = startDate != null ? sdf.format(new java.util.Date(startDate)) : "?";
+            String end = endDate != null ? sdf.format(new java.util.Date(endDate)) : "?";
+            tvDateRange.setText(start + " - " + end);
+        }
+    }
+
+    private void showFoodSelectionDialog(List<String> selectedFoodIds, Map<String, Integer> quantities, Runnable onUpdate) {
+        boolean[] checkedItems = new boolean[foodList.size()];
+        String[] foodNames = new String[foodList.size()];
+
+        for (int i = 0; i < foodList.size(); i++) {
+            FoodItem item = foodList.get(i);
+            foodNames[i] = item.getName() + " (" + item.getPrice() + " VNĐ)";
+            checkedItems[i] = selectedFoodIds.contains(item.getDocumentId());
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Chọn món ăn cho combo")
+                .setMultiChoiceItems(foodNames, checkedItems, (dialog, which, isChecked) -> {
+                    FoodItem item = foodList.get(which);
+                    if (isChecked) {
+                        if (!selectedFoodIds.contains(item.getDocumentId())) {
+                            selectedFoodIds.add(item.getDocumentId());
+                            quantities.put(item.getDocumentId(), 1);
+                        }
+                    } else {
+                        selectedFoodIds.remove(item.getDocumentId());
+                        quantities.remove(item.getDocumentId());
+                    }
+                })
+                .setPositiveButton("Xong", (dialog, which) -> {
+                    if (onUpdate != null) onUpdate.run();
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    interface OnDateSelectedListener {
+        void onDateSelected(long timestamp);
     }
 }

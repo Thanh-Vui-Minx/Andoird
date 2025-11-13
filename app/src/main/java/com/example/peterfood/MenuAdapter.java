@@ -39,18 +39,35 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
         FoodItem item = foodList.get(position);
 
         // === SECTION HEADER: "COMBO GỢI Ý" HOẶC "TẤT CẢ MÓN ĂN" ===
-        if ("header_combo".equals(item.getDocumentId()) || "header_food".equals(item.getDocumentId())) {
+        if ("header_combo".equals(item.getDocumentId()) || 
+            "header_limited_combo".equals(item.getDocumentId()) ||
+            "header_regular_combo".equals(item.getDocumentId()) ||
+            "header_food".equals(item.getDocumentId()) || 
+            "header_drink".equals(item.getDocumentId())) {
             holder.tvName.setText(item.getName());
             holder.tvName.setTextSize(20);
             holder.tvName.setTypeface(null, android.graphics.Typeface.BOLD);
             holder.tvName.setTextColor(context.getResources().getColor(R.color.primary));
 
+            // Show only the header label — hide item views
             holder.tvDescription.setVisibility(View.GONE);
             holder.tvPrice.setVisibility(View.GONE);
             holder.tvRating.setVisibility(View.GONE);
             holder.ivImage.setVisibility(View.GONE);
             holder.tvComboBadge.setVisibility(View.GONE);
             holder.tvSavings.setVisibility(View.GONE);
+
+            // Set a section icon for food/drink headers using compound drawable
+            if ("header_food".equals(item.getDocumentId())) {
+                holder.tvName.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_food, 0, 0, 0);
+                holder.tvName.setCompoundDrawablePadding((int) (8 * context.getResources().getDisplayMetrics().density));
+            } else if ("header_drink".equals(item.getDocumentId())) {
+                holder.tvName.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_drink, 0, 0, 0);
+                holder.tvName.setCompoundDrawablePadding((int) (8 * context.getResources().getDisplayMetrics().density));
+            } else {
+                // remove any drawable for other headers
+                holder.tvName.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+            }
             return;
         }
 
@@ -106,7 +123,10 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
         // === ĐÁNH GIÁ ===
         holder.tvRating.setText("Đánh giá: " + item.getRating() + "/5");
 
-        // === ẢNH ===
+    // Clear any header icon for normal items
+    holder.tvName.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+
+    // === ẢNH ===
         if (!item.getImageUrl().isEmpty()) {
             Glide.with(context)
                     .load(item.getImageUrl())

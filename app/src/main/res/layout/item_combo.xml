@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Image Container with Badges -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp">
+
+            <ImageView
+                android:id="@+id/ivComboImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="@color/surface" />
+
+            <!-- Limited Time Badge -->
+            <TextView
+                android:id="@+id/tvLimitedBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⏰ GIỚI HẠN"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="#FF5722"
+                android:padding="6dp"
+                android:layout_gravity="top|start"
+                android:layout_margin="8dp"
+                android:visibility="gone" />
+
+            <!-- Savings Badge -->
+            <TextView
+                android:id="@+id/tvSavingsBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tiết kiệm 20%"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="#4CAF50"
+                android:padding="6dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="8dp" />
+
+            <!-- Countdown Timer -->
+            <LinearLayout
+                android:id="@+id/llCountdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:background="#DD000000"
+                android:padding="6dp"
+                android:layout_margin="8dp"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⏳ "
+                    android:textColor="@android:color/white"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvCountdown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2 ngày 5 giờ"
+                    android:textColor="@android:color/white"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <!-- Combo Name -->
+            <TextView
+                android:id="@+id/tvComboName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Combo Gia Đình"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/textPrimary"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <!-- Description -->
+            <TextView
+                android:id="@+id/tvComboDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="4 món ăn + 6 nước uống"
+                android:textSize="14sp"
+                android:textColor="@color/textSecondary"
+                android:layout_marginTop="4dp"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <!-- Pricing -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical">
+
+                <!-- Combo Price -->
+                <TextView
+                    android:id="@+id/tvComboPrice"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="150,000 VNĐ"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#FF5722" />
+
+                <!-- Original Price -->
+                <TextView
+                    android:id="@+id/tvOriginalPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="200,000 VNĐ"
+                    android:textSize="14sp"
+                    android:textColor="@color/textSecondary"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <!-- Savings Amount -->
+            <TextView
+                android:id="@+id/tvSavingsAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💰 Tiết kiệm 50,000 VNĐ"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#4CAF50"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
