@@ -991,17 +991,51 @@ public class MenuActivity extends BaseActivity {
                     for (DocumentSnapshot doc : querySnapshot) {
                         try {
                             ComboItem combo = doc.toObject(ComboItem.class);
-                            if (combo != null) {
-                                combo.setId(doc.getId());
-                                
-                                // Chỉ thêm combo còn hợp lệ
-                                if (combo.isValid()) {
-                                    if (combo.isLimitedTime()) {
-                                        limitedCombos.add(combo);
-                                    } else {
-                                        regularCombos.add(combo);
-                                    }
+                            if (combo == null) combo = new ComboItem();
+                            combo.setId(doc.getId());
+
+                            // Normalize fields in case Firestore stored different keys or Timestamp types
+                            try {
+                                // active
+                                Boolean activeField = doc.contains("active") ? doc.getBoolean("active") : null;
+                                if (activeField != null) combo.setActive(activeField);
+
+                                // limited time flag can be stored as 'isLimitedTime' or 'isLimited' or 'limitedTime'
+                                Boolean limitedFlag = null;
+                                if (doc.contains("isLimitedTime")) limitedFlag = doc.getBoolean("isLimitedTime");
+                                else if (doc.contains("isLimited")) limitedFlag = doc.getBoolean("isLimited");
+                                else if (doc.contains("limitedTime")) limitedFlag = doc.getBoolean("limitedTime");
+                                if (limitedFlag != null) combo.setLimitedTime(limitedFlag);
+
+                                // startDate / endDate may be stored as Timestamp or Long
+                                Object s = doc.get("startDate");
+                                if (s instanceof com.google.firebase.Timestamp) combo.setStartDate(((com.google.firebase.Timestamp) s).toDate().getTime());
+                                else if (s instanceof Number) combo.setStartDate(((Number) s).longValue());
+
+                                Object e = doc.get("endDate");
+                                if (e instanceof com.google.firebase.Timestamp) combo.setEndDate(((com.google.firebase.Timestamp) e).toDate().getTime());
+                                else if (e instanceof Number) combo.setEndDate(((Number) e).longValue());
+
+                                // createdAt normalization
+                                Object c = doc.get("createdAt");
+                                if (c instanceof com.google.firebase.Timestamp) combo.setCreatedAt(((com.google.firebase.Timestamp) c).toDate().getTime());
+                                else if (c instanceof Number) combo.setCreatedAt(((Number) c).longValue());
+                            } catch (Exception ex) {
+                                Log.w(TAG, "Normalization warning for combo doc " + doc.getId() + ": " + ex.getMessage());
+                            }
+
+                            // Debug logging for visibility
+                            Log.d(TAG, "Loaded combo doc=" + doc.getId() + " name=" + combo.getName() + " active=" + combo.isActive() + " limited=" + combo.isLimitedTime() + " start=" + combo.getStartDate() + " end=" + combo.getEndDate());
+
+                            // Chỉ thêm combo còn hợp lệ
+                            if (combo.isValid()) {
+                                if (combo.isLimitedTime()) {
+                                    limitedCombos.add(combo);
+                                } else {
+                                    regularCombos.add(combo);
                                 }
+                            } else {
+                                Log.i(TAG, "Skipping combo (not valid or inactive): " + combo.getId());
                             }
                         } catch (Exception e) {
                             Log.e(TAG, "Error parsing combo: " + e.getMessage(), e);

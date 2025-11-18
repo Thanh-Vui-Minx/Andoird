@@ -57,16 +57,33 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
             holder.tvComboBadge.setVisibility(View.GONE);
             holder.tvSavings.setVisibility(View.GONE);
 
-            // Set a section icon for food/drink headers using compound drawable
+            // For food/drink headers: prefix the title with the emoji and show a short subtitle
             if ("header_food".equals(item.getDocumentId())) {
-                holder.tvName.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_food, 0, 0, 0);
-                holder.tvName.setCompoundDrawablePadding((int) (8 * context.getResources().getDisplayMetrics().density));
-            } else if ("header_drink".equals(item.getDocumentId())) {
-                holder.tvName.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_drink, 0, 0, 0);
-                holder.tvName.setCompoundDrawablePadding((int) (8 * context.getResources().getDisplayMetrics().density));
-            } else {
-                // remove any drawable for other headers
+                // hide the separate combo badge and prefix the title with emoji
+                holder.tvComboBadge.setVisibility(View.GONE);
+                holder.tvName.setText("🎉 " + item.getName());
                 holder.tvName.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+                holder.tvDescription.setVisibility(View.VISIBLE);
+                holder.tvDescription.setText("Khám phá các món ăn phong phú");
+            } else if ("header_drink".equals(item.getDocumentId())) {
+                holder.tvComboBadge.setVisibility(View.GONE);
+                holder.tvName.setText("🎉 " + item.getName());
+                holder.tvName.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+                holder.tvDescription.setVisibility(View.VISIBLE);
+                holder.tvDescription.setText("Các loại đồ uống mát lạnh và thơm ngon");
+            } else {
+                // other headers (combo sections): show specific subtitles for limited vs regular combos
+                holder.tvComboBadge.setVisibility(View.GONE);
+                if ("header_limited_combo".equals(item.getDocumentId())) {
+                    holder.tvDescription.setVisibility(View.VISIBLE);
+                    holder.tvDescription.setText("Những combo đặt biệt chỉ có ở những sự kiện đặt biệt");
+                } else if ("header_regular_combo".equals(item.getDocumentId())) {
+                    holder.tvDescription.setVisibility(View.VISIBLE);
+                    holder.tvDescription.setText("Trải nghiệm món ăn với giá thành rẻ hơn cho bạn");
+                } else {
+                    holder.tvDescription.setVisibility(View.VISIBLE);
+                    holder.tvDescription.setText("Khám phá các combo hấp dẫn");
+                }
             }
             return;
         }
