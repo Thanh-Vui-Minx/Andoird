@@ -16,7 +16,7 @@ import android.graphics.drawable.Drawable;
 public abstract class BaseActivity extends AppCompatActivity {
 
     private static final String TAG = "BaseActivity";
-    private static final String LOGO_URL = "https://drive.google.com/uc?export=download&id=1A0wNVSle3_c-iKoYuyCgrxLxG0Wox5AJ"; // Link logo Google Drive
+    private static final String LOGO_URL = "https://drive.google.com/uc?export=download&id=1FiI3mfuagF1zQhCKkXAvtY4LbpkT9WlX"; // Link logo Google Drive
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

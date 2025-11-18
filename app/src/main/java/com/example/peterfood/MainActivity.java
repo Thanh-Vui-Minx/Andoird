@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivLogo;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-    private static final String LOGO_URL = "https://drive.google.com/uc?export=download&id=1A0wNVSle3_c-iKoYuyCgrxLxG0Wox5AJ"; // Link logo Google Drive
+    private static final String LOGO_URL = "https://drive.google.com/uc?export=download&id=1FiI3mfuagF1zQhCKkXAvtY4LbpkT9WlX"; // Link logo Google Drive
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
