@@ -61,13 +61,13 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
             if ("header_food".equals(item.getDocumentId())) {
                 // hide the separate combo badge and prefix the title with emoji
                 holder.tvComboBadge.setVisibility(View.GONE);
-                holder.tvName.setText("🎉 " + item.getName());
+                holder.tvName.setText("\uD83C\uDF54" + item.getName());
                 holder.tvName.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
                 holder.tvDescription.setVisibility(View.VISIBLE);
                 holder.tvDescription.setText("Khám phá các món ăn phong phú");
             } else if ("header_drink".equals(item.getDocumentId())) {
                 holder.tvComboBadge.setVisibility(View.GONE);
-                holder.tvName.setText("🎉 " + item.getName());
+                holder.tvName.setText("\uD83E\uDD64" + item.getName());
                 holder.tvName.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
                 holder.tvDescription.setVisibility(View.VISIBLE);
                 holder.tvDescription.setText("Các loại đồ uống mát lạnh và thơm ngon");
