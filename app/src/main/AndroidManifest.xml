@@ -27,6 +27,8 @@
         <activity android:name=".CartActivity" />
         <activity android:name=".PaymentActivity" />
         <activity android:name=".ProfileActivity" />
+        <activity android:name=".FavoritesActivity" />
+        <activity android:name=".ContactActivity" />
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

@@ -1,5 +1,6 @@
 package com.example.peterfood;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -12,6 +13,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -24,7 +27,7 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
     private static final String TAG = "ProfileActivity";
     private TextView tvEmail, tvUsername, tvFullname, tvPhone;
     private LinearLayout containerAddresses;
-    private Button btnEdit, btnSave, btnCancel, btnAddAddress, btnBackToMenu, btnOrderHistory, btnVouchers;
+    private Button btnEdit, btnSave, btnCancel, btnAddAddress, btnBackToMenu, btnOrderHistory, btnVouchers, btnViewFavorites;
 
     private EditText etUsername, etFullname, etPhone;
     private List<EditText> addressEditTexts = new ArrayList<>();
@@ -34,6 +37,10 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
     private FirebaseFirestore db;
     private FirebaseUser currentUser;
     private boolean isEditing = false;
+    private androidx.appcompat.widget.Toolbar toolbarProfile;
+    private androidx.recyclerview.widget.RecyclerView rvFavorites;
+    private MenuAdapter favoritesAdapter;
+    private java.util.Set<String> favoritesSet = new java.util.HashSet<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +64,23 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
         setupClickListeners();
     }
 
+    @SuppressLint("SuspiciousIndentation")
     private void initViews() {
         Log.d(TAG, "initViews: Bắt đầu tìm view...");
+
+        this.toolbarProfile = (Toolbar) findViewById(R.id.toolbarProfile);
+        if (this.toolbarProfile != null) {
+            this.toolbarProfile.setNavigationOnClickListener(v -> {
+                if (isEditing) {
+                    // act as cancel: discard unsaved edits and reload server data
+                    exitEditMode(true);
+                } else {
+                    finish();
+                }
+            });
+            // ensure initial nav icon is back
+            this.toolbarProfile.setNavigationIcon(android.R.drawable.ic_menu_revert);
+        }
 
         tvEmail = findViewById(R.id.tvEmail);
         tvUsername = findViewById(R.id.tvUsername);
@@ -68,19 +90,21 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
         btnEdit = findViewById(R.id.btnEdit);
         btnSave = findViewById(R.id.btnSave);
         btnCancel = findViewById(R.id.btnCancel);
-    btnAddAddress = findViewById(R.id.btnAddAddress);
-    btnBackToMenu = findViewById(R.id.btnBackToMenu);
-    btnOrderHistory = findViewById(R.id.btnOrderHistory);
-    btnVouchers = findViewById(R.id.btnVouchers);
+        btnAddAddress = findViewById(R.id.btnAddAddress);
+        btnBackToMenu = findViewById(R.id.btnBackToMenu);
+        btnOrderHistory = findViewById(R.id.btnOrderHistory);
+        btnVouchers = findViewById(R.id.btnVouchers);
+        rvFavorites = findViewById(R.id.rvFavorites);
+        btnViewFavorites = findViewById(R.id.btnViewFavorites);
 
         Log.d(TAG, "btnBackToMenu: " + btnBackToMenu);
         Log.d(TAG, "btnEdit: " + btnEdit);
-    }
+         }
 
     private void setupClickListeners() {
         if (btnEdit != null) btnEdit.setOnClickListener(v -> enterEditMode());
         if (btnSave != null) btnSave.setOnClickListener(v -> saveProfile());
-        if (btnCancel != null) btnCancel.setOnClickListener(v -> exitEditMode(false));
+        if (btnCancel != null) btnCancel.setOnClickListener(v -> exitEditMode(true));
         if (btnAddAddress != null) btnAddAddress.setOnClickListener(v -> addAddressField());
 
         if (btnBackToMenu != null) {
@@ -102,6 +126,13 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
 
         if (btnVouchers != null) {
             btnVouchers.setOnClickListener(v -> startActivity(new Intent(ProfileActivity.this, VoucherActivity.class)));
+        }
+        Button btnContact = findViewById(R.id.btnContact);
+        if (btnContact != null) {
+            btnContact.setOnClickListener(v -> startActivity(new Intent(ProfileActivity.this, ContactActivity.class)));
+        }
+        if (btnViewFavorites != null) {
+            btnViewFavorites.setOnClickListener(v -> startActivity(new Intent(ProfileActivity.this, FavoritesActivity.class)));
         }
     }
 
@@ -128,6 +159,17 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
                             addressList.add("Chưa có địa chỉ");
                         }
                         displayAddresses();
+                        // Favorites
+                        @SuppressWarnings("unchecked")
+                        List<String> favs = (List<String>) documentSnapshot.get("favorites");
+                        favoritesSet.clear();
+                        if (favs != null && !favs.isEmpty()) {
+                            favoritesSet.addAll(favs);
+                            loadFavoriteItems(favs);
+                        } else {
+                            // clear favorites view
+                            if (rvFavorites != null) rvFavorites.setVisibility(View.GONE);
+                        }
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -181,11 +223,89 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
         btnAddAddress.setVisibility(isEditing ? View.VISIBLE : View.GONE);
     }
 
+    private void loadFavoriteItems(List<String> favIds) {
+        if (favIds == null || favIds.isEmpty()) return;
+        rvFavorites.setVisibility(View.VISIBLE);
+        final List<FoodItem> favItems = new java.util.ArrayList<>();
+
+        // If list size <= 10 we can use whereIn, otherwise fetch individually
+        if (favIds.size() <= 10) {
+            db.collection("NewFoodDB").whereIn(com.google.firebase.firestore.FieldPath.documentId(), favIds)
+                    .get()
+                    .addOnSuccessListener(q -> {
+                        favItems.clear();
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : q.getDocuments()) {
+                            try {
+                                String id = doc.getId();
+                                String name = doc.getString("name");
+                                Number price = (Number) doc.get("price");
+                                Number salePrice = (Number) doc.get("salePrice");
+                                String imageUrl = doc.getString("imageUrl");
+                                Number rating = (Number) doc.get("rating");
+                                FoodItem item = new FoodItem(id, name, doc.getString("description"), price != null ? price.intValue() : 0, imageUrl != null ? imageUrl : "", rating != null ? rating.intValue() : 0, salePrice != null ? salePrice.intValue() : null);
+                                favItems.add(item);
+                            } catch (Exception e) {
+                                // ignore individual failures
+                            }
+                        }
+                        // Setup adapter
+                        favoritesAdapter = new MenuAdapter(favItems, this, item -> {
+                            // open detail (ask MenuActivity to open the item)
+                            Intent intent = new Intent(ProfileActivity.this, MenuActivity.class);
+                            intent.putExtra("open_item", item.getDocumentId());
+                            startActivity(intent);
+                        }, favoritesSet, new MenuAdapter.OnFavoriteClick() {
+                            @Override
+                            public void onFavoriteClick(FoodItem item, boolean newState) {
+                                // update UI and reload profile favorites
+                                loadUserData();
+                            }
+                        }, false);
+                        rvFavorites.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false));
+                        rvFavorites.setAdapter(favoritesAdapter);
+                    });
+        } else {
+            // fallback: fetch documents individually
+            favItems.clear();
+            final int[] remaining = {favIds.size()};
+            for (String id : favIds) {
+                db.collection("NewFoodDB").document(id).get().addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        try {
+                            String name = doc.getString("name");
+                            Number price = (Number) doc.get("price");
+                            Number salePrice = (Number) doc.get("salePrice");
+                            String imageUrl = doc.getString("imageUrl");
+                            Number rating = (Number) doc.get("rating");
+                            FoodItem item = new FoodItem(doc.getId(), name, doc.getString("description"), price != null ? price.intValue() : 0, imageUrl != null ? imageUrl : "", rating != null ? rating.intValue() : 0, salePrice != null ? salePrice.intValue() : null);
+                            favItems.add(item);
+                        } catch (Exception e) {}
+                    }
+                    remaining[0]--;
+                        if (remaining[0] == 0) {
+                        favoritesAdapter = new MenuAdapter(favItems, this, item -> {
+                            Intent intent = new Intent(ProfileActivity.this, MenuActivity.class);
+                            intent.putExtra("open_item", item.getDocumentId());
+                            startActivity(intent);
+                        }, favoritesSet, (itm, ns) -> loadUserData(), false);
+                        rvFavorites.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false));
+                        rvFavorites.setAdapter(favoritesAdapter);
+                    }
+                });
+            }
+        }
+    }
+
     private void enterEditMode() {
         isEditing = true;
         btnEdit.setVisibility(View.GONE);
         btnSave.setVisibility(View.VISIBLE);
         btnCancel.setVisibility(View.VISIBLE);
+
+        // change toolbar nav icon to a 'cancel' icon while editing
+        if (toolbarProfile != null) {
+            toolbarProfile.setNavigationIcon(android.R.drawable.ic_menu_close_clear_cancel);
+        }
 
         // Chuyển TextView → EditText
         replaceWithEditText(tvUsername, etUsername = new EditText(this));
@@ -262,6 +382,11 @@ public class ProfileActivity extends BaseActivity { // ĐỔI TỪ AppCompatActi
         btnSave.setVisibility(View.GONE);
         btnCancel.setVisibility(View.GONE);
         addressEditTexts.clear();
+
+        // restore toolbar nav icon to back
+        if (toolbarProfile != null) {
+            toolbarProfile.setNavigationIcon(android.R.drawable.ic_menu_revert);
+        }
 
         if (reload) {
             loadUserData();

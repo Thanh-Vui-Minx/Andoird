@@ -51,8 +51,10 @@ public class MenuActivity extends BaseActivity {
     private List<FoodItem> filteredFoodList;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private java.util.Set<String> favoritesSet = new java.util.HashSet<>();
     private String role;
     private EditText etSearch;
+    private String pendingOpenItemId = null;
     private List<FoodItem> comboSectionList = new ArrayList<>();  // Combo riêng
     private List<FoodItem> regularFoodList = new ArrayList<>();   // Món thường
     private List<FoodItem> drinkList = new ArrayList<>(); // Nước uống riêng
@@ -85,9 +87,19 @@ public class MenuActivity extends BaseActivity {
         mAuth = FirebaseAuth.getInstance();
         foodList = new ArrayList<>();
         filteredFoodList = new ArrayList<>();
-        adapter = new MenuAdapter(filteredFoodList, this, item -> showFoodDetailDialog(item));
+        adapter = new MenuAdapter(filteredFoodList, this, item -> showFoodDetailDialog(item), favoritesSet, new MenuAdapter.OnFavoriteClick() {
+            @Override
+            public void onFavoriteClick(FoodItem item, boolean newState) {
+                handleFavoriteToggle(item, newState);
+            }
+        });
         rvMenu.setLayoutManager(new LinearLayoutManager(this));
         rvMenu.setAdapter(adapter);
+
+        // Check if launched with a request to open a specific item
+        if (getIntent() != null) {
+            pendingOpenItemId = getIntent().getStringExtra("open_item");
+        }
 
         role = getSharedPreferences("UserPrefs", MODE_PRIVATE).getString("role", "user");
         if (!"admin".equals(role)) {
@@ -112,6 +124,7 @@ public class MenuActivity extends BaseActivity {
         });
 
         loadFoodList();
+        loadUserFavorites();
 
         ImageButton btnProfile = findViewById(R.id.btnProfile);
         btnProfile.setOnClickListener(v -> startActivity(new Intent(MenuActivity.this, ProfileActivity.class)));
@@ -338,6 +351,40 @@ public class MenuActivity extends BaseActivity {
 
         btnClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
+    }
+
+    private void loadUserFavorites() {
+        if (mAuth.getCurrentUser() == null) return;
+        db.collection("users").document(mAuth.getCurrentUser().getUid())
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        @SuppressWarnings("unchecked")
+                        java.util.List<String> favs = (java.util.List<String>) doc.get("favorites");
+                        favoritesSet.clear();
+                        if (favs != null) favoritesSet.addAll(favs);
+                        if (adapter != null) adapter.notifyDataSetChanged();
+                    }
+                });
+    }
+
+    private void handleFavoriteToggle(FoodItem item, boolean newState) {
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(this, "Vui lòng đăng nhập để sử dụng chức năng yêu thích", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, MainActivity.class));
+            return;
+        }
+
+        DocumentReference userRef = db.collection("users").document(mAuth.getCurrentUser().getUid());
+        if (newState) {
+            userRef.update("favorites", FieldValue.arrayUnion(item.getDocumentId()))
+                    .addOnSuccessListener(a -> Toast.makeText(this, "Đã thêm vào Yêu thích", Toast.LENGTH_SHORT).show())
+                    .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        } else {
+            userRef.update("favorites", FieldValue.arrayRemove(item.getDocumentId()))
+                    .addOnSuccessListener(a -> Toast.makeText(this, "Đã xóa khỏi Yêu thích", Toast.LENGTH_SHORT).show())
+                    .addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        }
     }
     private void showAddFoodDialog() {
         Dialog dialog = new Dialog(this);
@@ -791,6 +838,18 @@ public class MenuActivity extends BaseActivity {
                     // 6. CẬP NHẬT ADAPTER
                     adapter.notifyDataSetChanged();
 
+                    // If there is a pending open request (from FavoritesActivity), try to open it
+                    if (pendingOpenItemId != null) {
+                        for (FoodItem it : filteredFoodList) {
+                            if (pendingOpenItemId.equals(it.getDocumentId())) {
+                                // open detail on UI thread after adapter updated
+                                showFoodDetailDialog(it);
+                                pendingOpenItemId = null;
+                                break;
+                            }
+                        }
+                    }
+
                     if (filteredFoodList.isEmpty()) {
                         Toast.makeText(this, "Không có món ăn nào", Toast.LENGTH_SHORT).show();
                     }
@@ -1045,6 +1104,17 @@ public class MenuActivity extends BaseActivity {
                     // Cập nhật UI
                     updateMenuWithSections();
                     adapter.notifyDataSetChanged();
+
+                    // If there is a pending open request (from FavoritesActivity), try to open it
+                    if (pendingOpenItemId != null) {
+                        for (FoodItem it : filteredFoodList) {
+                            if (pendingOpenItemId.equals(it.getDocumentId())) {
+                                showFoodDetailDialog(it);
+                                pendingOpenItemId = null;
+                                break;
+                            }
+                        }
+                    }
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error loading combos: " + e.getMessage(), e);

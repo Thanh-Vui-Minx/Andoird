@@ -5,26 +5,53 @@ import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
 
     private List<FoodItem> foodList;
     private Context context;
     private OnItemClickListener listener;
+    private Set<String> favorites = new HashSet<>();
+    private OnFavoriteClick favoriteClickListener;
+    private boolean showFavoriteIcon = true;
 
     public interface OnItemClickListener {
         void onItemClick(FoodItem item);
+    }
+
+    public interface OnFavoriteClick {
+        void onFavoriteClick(FoodItem item, boolean newState);
     }
 
     public MenuAdapter(List<FoodItem> foodList, Context context, OnItemClickListener listener) {
         this.foodList = foodList;
         this.context = context;
         this.listener = listener;
+    }
+
+    public MenuAdapter(List<FoodItem> foodList, Context context, OnItemClickListener listener, Set<String> favorites, OnFavoriteClick favoriteClickListener) {
+        this.foodList = foodList;
+        this.context = context;
+        this.listener = listener;
+        if (favorites != null) this.favorites = favorites;
+        this.favoriteClickListener = favoriteClickListener;
+    }
+
+    public MenuAdapter(List<FoodItem> foodList, Context context, OnItemClickListener listener, Set<String> favorites, OnFavoriteClick favoriteClickListener, boolean showFavoriteIcon) {
+        this.foodList = foodList;
+        this.context = context;
+        this.listener = listener;
+        if (favorites != null) this.favorites = favorites;
+        this.favoriteClickListener = favoriteClickListener;
+        this.showFavoriteIcon = showFavoriteIcon;
     }
 
     @Override
@@ -84,6 +111,10 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
                     holder.tvDescription.setVisibility(View.VISIBLE);
                     holder.tvDescription.setText("Khám phá các combo hấp dẫn");
                 }
+            }
+            // Hide favorite button for header rows
+            if (holder.btnFavorite != null) {
+                holder.btnFavorite.setVisibility(View.GONE);
             }
             return;
         }
@@ -154,6 +185,23 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
             holder.ivImage.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 
+        // === FAVORITE ICON ===
+        if (holder.btnFavorite != null) {
+            if (!showFavoriteIcon) {
+                holder.btnFavorite.setVisibility(View.GONE);
+            } else {
+                holder.btnFavorite.setVisibility(View.VISIBLE);
+                boolean isFav = favorites.contains(item.getDocumentId());
+                holder.btnFavorite.setImageResource(isFav ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+                holder.btnFavorite.setOnClickListener(v -> {
+                    boolean newState = !favorites.contains(item.getDocumentId());
+                    if (newState) favorites.add(item.getDocumentId()); else favorites.remove(item.getDocumentId());
+                    holder.btnFavorite.setImageResource(newState ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+                    if (favoriteClickListener != null) favoriteClickListener.onFavoriteClick(item, newState);
+                });
+            }
+        }
+
         // === CLICK ===
         holder.itemView.setOnClickListener(v -> listener.onItemClick(item));
     }
@@ -166,6 +214,7 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
     // ==================== VIEWHOLDER ĐÃ CẬP NHẬT ====================
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivImage;
+        ImageButton btnFavorite;
         TextView tvName, tvDescription, tvPrice, tvRating;
         TextView tvComboBadge, tvSavings;
 
@@ -178,6 +227,7 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
             tvRating = itemView.findViewById(R.id.tvFoodRating);
             tvComboBadge = itemView.findViewById(R.id.tvComboBadge);
             tvSavings = itemView.findViewById(R.id.tvSavings);
+            btnFavorite = itemView.findViewById(R.id.btnFavorite);
         }
     }
 }

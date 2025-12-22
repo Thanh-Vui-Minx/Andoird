@@ -405,6 +405,33 @@ public class CartActivity extends AppCompatActivity {
                                     db.collection("users").document(currentUser.getUid())
                                             .set(emptyCart, SetOptions.merge())
                                             .addOnSuccessListener(aVoid2 -> {
+                                                // If a voucher was applied and it should be consumed for a single use, remove it from user's claimed vouchers
+                                                if (appliedVoucherId[0] != null) {
+                                                    String usedVoucherId = appliedVoucherId[0];
+                                                    // remove from user's claimed vouchers list
+                                                    db.collection("users").document(currentUser.getUid())
+                                                            .update("vouchers", com.google.firebase.firestore.FieldValue.arrayRemove(usedVoucherId))
+                                                            .addOnSuccessListener(aVoid3 -> {
+                                                                // check voucher doc for single-use flag and mark it inactive / record usedBy
+                                                                db.collection("vouchers").document(usedVoucherId).get()
+                                                                        .addOnSuccessListener(vDoc -> {
+                                                                            if (vDoc.exists()) {
+                                                                                Boolean singleUse = vDoc.getBoolean("singleUse");
+                                                                                if (singleUse != null && singleUse) {
+                                                                                    Map<String, Object> vUpdates = new HashMap<>();
+                                                                                    vUpdates.put("active", false);
+                                                                                    vUpdates.put("usedBy", com.google.firebase.firestore.FieldValue.arrayUnion(currentUser.getUid()));
+                                                                                    db.collection("vouchers").document(usedVoucherId).update(vUpdates);
+                                                                                } else {
+                                                                                    // Optionally record use by this user for analytics
+                                                                                    db.collection("vouchers").document(usedVoucherId).update("usedBy", com.google.firebase.firestore.FieldValue.arrayUnion(currentUser.getUid()));
+                                                                                }
+                                                                            }
+                                                                        });
+                                                            })
+                                                            .addOnFailureListener(e -> Log.w(TAG, "Không thể xóa voucher khỏi tài khoản người dùng: " + e.getMessage()));
+                                                }
+
                                                 cartItems.clear();
                                                 if (cartAdapter != null) cartAdapter.notifyDataSetChanged();
                                                 // also persist local clear

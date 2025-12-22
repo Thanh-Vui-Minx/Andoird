@@ -129,17 +129,33 @@ public class VoucherActivity extends AppCompatActivity {
                         }
 
                         String voucherId = doc.getId();
-                        // add voucher id to users/{uid}.vouchers array
-                        db.collection("users").document(uid)
-                                .update("vouchers", com.google.firebase.firestore.FieldValue.arrayUnion(voucherId))
-                                .addOnSuccessListener(aVoid -> {
-                                    android.widget.Toast.makeText(this, "Voucher đã được thêm vào tài khoản của bạn", android.widget.Toast.LENGTH_SHORT).show();
-                                    // refresh the user's claimed list immediately
-                                    loadVouchers();
+                        // make final copies for lambda capture
+                        final String voucherIdFinal = voucherId;
+                        final String uidFinal = uid;
+                        // Prevent duplicate claims: read user doc and check existing vouchers
+                        db.collection("users").document(uidFinal).get()
+                                .addOnSuccessListener(userDoc -> {
+                                    if (userDoc.exists()) {
+                                        @SuppressWarnings("unchecked")
+                                        List<String> existing = (List<String>) userDoc.get("vouchers");
+                                        if (existing != null && existing.contains(voucherIdFinal)) {
+                                            android.widget.Toast.makeText(VoucherActivity.this, "Bạn đã có voucher này trong tài khoản", android.widget.Toast.LENGTH_SHORT).show();
+                                            return;
+                                        }
+                                    }
+                                    // add voucher id to users/{uid}.vouchers array
+                                    db.collection("users").document(uidFinal)
+                                            .update("vouchers", com.google.firebase.firestore.FieldValue.arrayUnion(voucherIdFinal))
+                                            .addOnSuccessListener(aVoid -> {
+                                                android.widget.Toast.makeText(VoucherActivity.this, "Voucher đã được thêm vào tài khoản của bạn", android.widget.Toast.LENGTH_SHORT).show();
+                                                // refresh the user's claimed list immediately
+                                                loadVouchers();
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                android.widget.Toast.makeText(VoucherActivity.this, "Không thể thêm voucher vào tài khoản: " + e.getMessage(), android.widget.Toast.LENGTH_SHORT).show();
+                                            });
                                 })
-                                .addOnFailureListener(e -> {
-                                    android.widget.Toast.makeText(this, "Không thể thêm voucher vào tài khoản: " + e.getMessage(), android.widget.Toast.LENGTH_SHORT).show();
-                                });
+                                .addOnFailureListener(e -> android.widget.Toast.makeText(VoucherActivity.this, "Lỗi truy vấn tài khoản: " + e.getMessage(), android.widget.Toast.LENGTH_SHORT).show());
                     })
                     .addOnFailureListener(e -> android.widget.Toast.makeText(this, "Lỗi kiểm tra voucher: " + e.getMessage(), android.widget.Toast.LENGTH_SHORT).show());
         });
